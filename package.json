@@ -1,0 +1,26 @@
+{
+  "name": "data-agent-library",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/anconprotocol/data-agent-library.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/anconprotocol/data-agent-library/issues"
+  },
+  "homepage": "https://github.com/anconprotocol/data-agent-library#readme",
+  "dependencies": {
+    "@ipld/dag-cbor": "^7.0.1",
+    "@ipld/dag-json": "^8.0.8",
+    "@multiformats/sha3": "^2.0.8",
+    "blockstore-core": "^1.0.5",
+    "multiformats": "^9.6.4"
+  }
+}
