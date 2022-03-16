@@ -22,7 +22,9 @@
     "@multiformats/sha3": "^2.0.8",
     "@walmartlabs/json-to-simple-graphql-schema": "^3.0.1",
     "blockstore-core": "^1.0.5",
+    "dexie": "^3.2.1",
     "graphql-to-sqlite-ddl": "^2.0.2",
+    "js-waku": "^0.19.1-babel.0",
     "multiformats": "^9.6.4",
     "sql.js": "^1.6.2"
   },
