@@ -23,9 +23,11 @@
     "@walmartlabs/json-to-simple-graphql-schema": "^3.0.1",
     "blockstore-core": "^1.0.5",
     "dexie": "^3.2.1",
+    "fake-indexeddb": "^3.1.7",
     "flexsearch": "^0.7.21",
     "graphql": "^16.3.0",
     "graphql-sequelize": "^9.4.3",
+    "indexeddbshim": "^9.0.0",
     "js-waku": "^0.19.1-babel.0",
     "lunr": "^2.3.9",
     "multiformats": "^9.6.4",
@@ -36,6 +38,7 @@
     "typeconv": "^1.7.0"
   },
   "devDependencies": {
-    "@types/sql.js": "^1.4.3"
+    "@types/sql.js": "^1.4.3",
+    "ts-node": "^10.7.0"
   }
 }

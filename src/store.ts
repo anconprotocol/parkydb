@@ -1,65 +1,29 @@
-const toJsonSchema = require('to-json-schema')
+const setGlobalVars = require('indexeddbshim')
+// @ts-ignore
+global.window = global // We'll allow ourselves to use `window.indexedDB` or `indexedDB` as a global
+setGlobalVars(global, { checkOrigin: false }) // See signature below
+
 import { BaseBlockstore, CID } from 'blockstore-core/base'
-import { Dexie } from 'dexie'
-import initSqlJs from 'sql.js'
-import { getGraphQLWriter, getJsonSchemaReader, makeConverter } from 'typeconv'
-import { IndexService } from './indexing'
+import Dexie from 'dexie'
 
-export class DataAgentStore extends BaseBlockstore {
-  constructor(private db: Dexie) {
-    super()
-  }
+import { Hooks } from './hooks'
 
-  async open() {
-    const db = new Dexie('ancon')
+const db: Dexie | any = new Dexie('ancon', { indexedDB: global.indexedDB })
 
-    db.version(1).stores({
-      blockdb: `
-        &cid,
-        topic`,
-    })
-    ;(db as any).blockdb.hook('creating', this.createHook)
-    this.db = db
-  }
+db.version(1).stores({
+  blockdb: `
+    &cid,
+    topic`,
+})
+db.blockdb.hook('creating', Hooks.createHook(db))
 
-  async createHook(pk, obj, tx) {
-    // index
-    const indexService = new IndexService()
-    const indexKV = await indexService.build({
-      id: 'cid',
-      ...obj,
-    })
-
-    // create schemas
-    const reader = getJsonSchemaReader()
-    const writer = getGraphQLWriter()
-    const { convert } = makeConverter(reader, writer)
-    const jsch = toJsonSchema(obj)
-    const { data } = await convert({
-      data: jsch,
-    })
-
-    const graphqls = data
-
-    ;(this.db as any).blockdb.put({
-      cid: pk,
-      index: {
-        ...indexKV,
-      },
-      graphqls,
-      jsonschema: jsch,
-    })
-
-    // TODO: emit waku pubsub
-  }
-
+export class DataAgentStore {
   async put(key: CID, value: any) {
-    ;(this.db as any).blockdb.put({
+    return await db.blockdb.put({
       cid: key,
-      dag: value
+      dag: value,
     })
   }
-  // https://dexie.org/docs/Table/Table.hook('creating')
 
   // https://github.com/bradleyboy/tuql/blob/master/src/builders/schema.js
   // async put(key, val, options) {
@@ -70,13 +34,25 @@ export class DataAgentStore extends BaseBlockstore {
   options:(tpic, format)
   */
 
+  // @ts-ignore
   async get(key, options) {
-    const props = (this.db as any).blockdb.get({ cid: key })
+    const props = db.blockdb.get({ cid: key })
     return props
     // retrieve a block
   }
-
-  async filter() {}
-  async dbQuery() {}
-  async gqlQuery() {}
+  // @ts-ignore
+  async filter(key, options) {
+    const props = db.blockdb.get({ cid: key })
+    return props
+  }
+  // @ts-ignore
+  async dbQuery(key, options) {
+    const props = db.blockdb.get({ cid: key })
+    return props
+  }
+  // @ts-ignore
+  async gqlQuery(key, options) {
+    const props = db.blockdb.get({ cid: key })
+    return props
+  }
 }

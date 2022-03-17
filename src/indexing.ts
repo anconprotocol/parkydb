@@ -1,6 +1,7 @@
 const toJsonSchema = require('to-json-schema')
 import { IDataBuilder } from './IBuilder'
 import { IQueryBuilder } from './IQuery'
+// @ts-ignore
 import { Index, Document } from 'flexsearch'
 export class IndexService implements IDataBuilder, IQueryBuilder {
   constructor(private currentIndex?: any) {}
@@ -20,7 +21,7 @@ export class IndexService implements IDataBuilder, IQueryBuilder {
     })
 
     index.add(value)
-
+// @ts-ignore
     const res = await index.export(function (key, data) {
       return new Promise(function (resolve) {
         // do the saving as async
