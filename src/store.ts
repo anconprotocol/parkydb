@@ -1,7 +1,7 @@
 const setGlobalVars = require('indexeddbshim')
 // @ts-ignore
 global.window = global // We'll allow ourselves to use `window.indexedDB` or `indexedDB` as a global
-setGlobalVars(global, { checkOrigin: false }) // See signature below
+setGlobalVars(global  , { checkOrigin: false }) // See signature below
 
 import { BaseBlockstore, CID } from 'blockstore-core/base'
 import Dexie from 'dexie'
@@ -19,8 +19,8 @@ db.blockdb.hook('creating', Hooks.createHook(db))
 
 export class DataAgentStore {
   async put(key: CID, value: any) {
-    return await db.blockdb.put({
-      cid: key,
+    return db.blockdb.put({
+      cid: key.toString(),
       dag: value,
     })
   }

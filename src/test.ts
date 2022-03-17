@@ -1,7 +1,11 @@
 import { DAGJsonService } from './dagjson';
 import { DataAgentStore } from './store'
 
-(async () => {
+async function b()  {
+  
+  
+  
+  
   
   const test = new DataAgentStore();
   const payload = {
@@ -11,5 +15,7 @@ import { DataAgentStore } from './store'
   }
   const dag = new DAGJsonService()
   const block = await dag.build(payload);
-  const res = await test.put(block.cid, block.bytes);
-})()
+  const res = await test.put(block.cid, block);
+}
+
+b()
