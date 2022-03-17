@@ -1,10 +1,10 @@
-import { BaseBlockstore } from 'blockstore-core/base'
+import { BaseBlockstore, CID } from 'blockstore-core/base'
 import { Dexie } from 'dexie'
 import initSqlJs from 'sql.js'
 
 export class DataAgentStore extends BaseBlockstore {
   constructor(private db: Dexie) {
-    super();
+    super()
   }
 
   async open() {
@@ -18,7 +18,15 @@ export class DataAgentStore extends BaseBlockstore {
 
     this.db = db
   }
+
+  async put(key: CID, value: any) {}
   // https://dexie.org/docs/Table/Table.hook('creating')
+
+  async createHook(){
+    // index 
+    // create schemas
+    // emit waku pubsub
+  }
   // https://github.com/bradleyboy/tuql/blob/master/src/builders/schema.js
   // async put(key, val, options) {
   //   // store a block
@@ -26,19 +34,14 @@ export class DataAgentStore extends BaseBlockstore {
   layer 2 transforms json to graph, graph to sqlite and save to dexie block
   // } insert into , first have to create a block schema
   options:(topic, format)
+  */1
 
-  // async get(key, options) {
-  //   // retrieve a block
-  // } 
-  /* Select by key and the value must be json parse
+  async get(key, options) {
+    return this
+    // retrieve a block
+  }
 
-  */
-
-  // ...etc
-
-  /*
-  {
-    "foo": "bar"
-    "bar": "foo"
-  } */
+  async filter(){}
+  async dbQuery(){}
+  async gqlQuery(){}
 }
