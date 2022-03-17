@@ -23,10 +23,15 @@
     "@walmartlabs/json-to-simple-graphql-schema": "^3.0.1",
     "blockstore-core": "^1.0.5",
     "dexie": "^3.2.1",
-    "graphql-to-sqlite-ddl": "^2.0.2",
+    "graphql": "^16.3.0",
+    "graphql-sequelize": "^9.4.3",
     "js-waku": "^0.19.1-babel.0",
     "multiformats": "^9.6.4",
-    "sql.js": "^1.6.2"
+    "sequelize": "^6.17.0",
+    "sql.js": "^1.6.2",
+    "to-json-schema": "^0.2.5",
+    "trilogy": "^2.0.5",
+    "typeconv": "^1.7.0"
   },
   "devDependencies": {
     "@types/sql.js": "^1.4.3"
