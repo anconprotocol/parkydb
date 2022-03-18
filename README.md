@@ -23,13 +23,13 @@ Stores key as cid or custom (topic) and values in the layered approached with a 
 
 Stores as an IPLD Multiformats DAG Block. Input must be a JSON payload. Can support either CBOR or JSON. This layer keeps data immutable (no mutations allowed).
 
-### DB (Entity Relational Layer - Layer 2) 
+### Document (Document Layer - Layer 2) 
 
-Stores as a SQLite DB as binary. Input must be a JSON payload. Used for queries only and represents a snapshot of the immutable data in DAG.
+Stores as a LokiJS serialized JSON. Input must be a JSON payload. Used for queries only and represents a snapshot of the immutable data in DAG.
 
 ### Index (Index Layer - Layer 3)  
 
-Stores as a Lunr/Lucene or Bloom filter index. Input must be JSON payload. Used for search only and represents the JSON payload index.
+Stores as a Minisearch filter index. Input must be JSON payload. Used for search only and represents the JSON payload index.
 
 ### GraphQL Schema (Query/Mutation Layer - Layer 4)
 

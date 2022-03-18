@@ -1,21 +1,21 @@
-const setGlobalVars = require('indexeddbshim')
-// @ts-ignore
-global.window = global // We'll allow ourselves to use `window.indexedDB` or `indexedDB` as a global
-setGlobalVars(global, { checkOrigin: false }) // See signature below
+const fakeIndexedDB = require('fake-indexeddb')
+const fakeIDBKeyRange = require('fake-indexeddb/lib/FDBKeyRange')
 
 import { BaseBlockstore, CID } from 'blockstore-core/base'
 import Dexie from 'dexie'
 import MiniSearch from 'minisearch'
 import { Block } from 'multiformats/block'
 import { getGraphQLWriter, getJsonSchemaReader, makeConverter } from 'typeconv'
-import { IndexService } from './indexing'
+import { DocumentService } from './db'
 const toJsonSchema = require('to-json-schema')
 const { MerkleJson } = require('merkle-json')
 
-const db: Dexie | any = new Dexie('ancon', { indexedDB: global.indexedDB })
+const db: Dexie | any = new Dexie('ancon', {
+  indexedDB: fakeIndexedDB,
+  IDBKeyRange: fakeIDBKeyRange,
+})
 
 db.version(1).stores({
-  indexes: '++id',
   blockdb: `
     &cid,
     topic`,
@@ -38,12 +38,17 @@ export class DataAgentStore {
       fields: Object.keys(value.value),
     })
 
+    const documentService = new DocumentService()
+
     await miniSearch.addAllAsync([{ id: key.toString(), ...value.value }])
     return db.blockdb.put({
       cid: key.toString(),
       dag: value,
-      jsonschema: jsch,
-      graphqls,
+      document: await documentService.build(value),
+      schemas: {
+        jsonschema: jsch,
+        graphqls,
+      },
       hashtag: mj.hash(value.value),
       index: JSON.stringify(miniSearch),
     })

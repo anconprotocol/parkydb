@@ -1,34 +1,19 @@
 const toJsonSchema = require('to-json-schema')
-import initSqlJs from 'sql.js'
-
-import { connect } from 'trilogy'
-import {
-  getJsonSchemaReader,
-  getTypeScriptWriter,
-  makeConverter,
-} from 'typeconv'
-import { BlockValue } from './blockvalue'
+const loki = require('lokijs')
+import { Block } from 'multiformats/block'
+import { IDataBuilder } from './IBuilder'
 import { IQueryBuilder } from './IQuery'
+export class DocumentService implements IDataBuilder, IQueryBuilder {
+  constructor(private currentIndex?: any) {}
+  async load(key: any, data: any): Promise<any> {}
 
-export class DBService implements IQueryBuilder {
-  async query(blockvalue: BlockValue) {
-    const reader = getJsonSchemaReader()
-    const writer = getTypeScriptWriter()
-    const { convert } = makeConverter(reader, writer)
-    const { data } = await convert({
-      data: blockvalue.jsonschema,
-    })
-
-    // set the filename to ':memory:' for fast, in-memory storage
-    const db = connect(':memory:', {
-      // it works for both clients above!
-      client: 'sql.js',
-    })
-
-    const blocks = await db.model('blocks', data as any)
-
-    await blocks.create(blockvalue.dag.value)
-
-    return blocks
+  async query(q: any): Promise<any> {
+    this.currentIndex.search(q)
+  }
+  async build(value: Block<any>, kvstore?: any): Promise<any> {
+    const db = new loki(null, { persistentMethod: 'memory', env: 'NODE' })                
+    const table = db.addCollection(value.cid.toString())
+    table.insert(value.value)
+    return db.serialize()
   }
 }
