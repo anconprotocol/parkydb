@@ -7,16 +7,16 @@ import {
   getTypeScriptWriter,
   makeConverter,
 } from 'typeconv'
+import { BlockValue } from './blockvalue'
 import { IQueryBuilder } from './IQuery'
 
 export class DBService implements IQueryBuilder {
-  async query(value: object) {
-    const jsch = toJsonSchema(value)
+  async query(blockvalue: BlockValue) {
     const reader = getJsonSchemaReader()
     const writer = getTypeScriptWriter()
     const { convert } = makeConverter(reader, writer)
     const { data } = await convert({
-      data: jsch,
+      data: blockvalue.jsonschema,
     })
 
     // set the filename to ':memory:' for fast, in-memory storage
@@ -27,7 +27,7 @@ export class DBService implements IQueryBuilder {
 
     const blocks = await db.model('blocks', data as any)
 
-    await blocks.create(value)
+    await blocks.create(blockvalue.dag.value)
 
     return blocks
   }

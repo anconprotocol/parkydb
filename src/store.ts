@@ -5,10 +5,12 @@ setGlobalVars(global, { checkOrigin: false }) // See signature below
 
 import { BaseBlockstore, CID } from 'blockstore-core/base'
 import Dexie from 'dexie'
+import MiniSearch from 'minisearch'
 import { Block } from 'multiformats/block'
 import { getGraphQLWriter, getJsonSchemaReader, makeConverter } from 'typeconv'
 import { IndexService } from './indexing'
 const toJsonSchema = require('to-json-schema')
+const { MerkleJson } = require('merkle-json')
 
 const db: Dexie | any = new Dexie('ancon', { indexedDB: global.indexedDB })
 
@@ -29,14 +31,21 @@ export class DataAgentStore {
     const { data } = await convert({
       data: jsch,
     })
-
+    const mj = new MerkleJson()
     const graphqls = data
 
+    const miniSearch = new MiniSearch({
+      fields: Object.keys(value.value),
+    })
+
+    await miniSearch.addAllAsync([{ id: key.toString(), ...value.value }])
     return db.blockdb.put({
       cid: key.toString(),
       dag: value,
       jsonschema: jsch,
       graphqls,
+      hashtag: mj.hash(value.value),
+      index: JSON.stringify(miniSearch),
     })
   }
 
