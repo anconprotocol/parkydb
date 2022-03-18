@@ -13,23 +13,20 @@ export class IndexService implements IDataBuilder, IQueryBuilder {
   async query(q: any): Promise<any> {
     this.currentIndex.search(q)
   }
-  async build(value: object) {
-    const index = new Document({
-      document: {
-        index: Object.keys(value),
-      },
-    })
+  async build(value: object, kvstore: any): Promise<any> {
+    return new Promise(function (resolve) {
+      const index = new Document({
+        document: {
+          index: Object.keys(value),
+        },
+      })
 
-    index.add(value)
-// @ts-ignore
-    const res = await index.export(function (key, data) {
-      return new Promise(function (resolve) {
+      index.add(value)
+      index.export(async (key: any, data: any) => {
         // do the saving as async
-
-        resolve({ key, data })
+        // resolve({ key, data })
+        await kvstore.put(key, data)
       })
     })
-
-    return res
   }
 }

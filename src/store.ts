@@ -1,27 +1,42 @@
 const setGlobalVars = require('indexeddbshim')
 // @ts-ignore
 global.window = global // We'll allow ourselves to use `window.indexedDB` or `indexedDB` as a global
-setGlobalVars(global  , { checkOrigin: false }) // See signature below
+setGlobalVars(global, { checkOrigin: false }) // See signature below
 
 import { BaseBlockstore, CID } from 'blockstore-core/base'
 import Dexie from 'dexie'
-
-import { Hooks } from './hooks'
+import { Block } from 'multiformats/block'
+import { getGraphQLWriter, getJsonSchemaReader, makeConverter } from 'typeconv'
+import { IndexService } from './indexing'
+const toJsonSchema = require('to-json-schema')
 
 const db: Dexie | any = new Dexie('ancon', { indexedDB: global.indexedDB })
 
 db.version(1).stores({
+  indexes: '++id',
   blockdb: `
     &cid,
     topic`,
 })
-db.blockdb.hook('creating', Hooks.createHook(db))
+// db.blockdb.hook('creating', Hooks.createHook(db))
 
 export class DataAgentStore {
-  async put(key: CID, value: any) {
+  async put(key: CID, value: Block<any>) {
+    const reader = getJsonSchemaReader()
+    const writer = getGraphQLWriter()
+    const { convert } = makeConverter(reader, writer)
+    const jsch = toJsonSchema(value.value)
+    const { data } = await convert({
+      data: jsch,
+    })
+
+    const graphqls = data
+
     return db.blockdb.put({
       cid: key.toString(),
       dag: value,
+      jsonschema: jsch,
+      graphqls,
     })
   }
 
@@ -36,9 +51,7 @@ export class DataAgentStore {
 
   // @ts-ignore
   async get(key, options) {
-    const props = db.blockdb.get({ cid: key })
-    return props
-    // retrieve a block
+    return db.blockdb.get({ cid: key })
   }
   // @ts-ignore
   async filter(key, options) {

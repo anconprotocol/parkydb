@@ -1,3 +1,3 @@
 export interface IDataBuilder{
-    build(data: any): Promise<any>;
+    build(data: any, kvstore?: any): Promise<any>;
 }
