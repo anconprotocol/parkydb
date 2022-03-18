@@ -1,6 +1,6 @@
 const toJsonSchema = require('to-json-schema')
-import { IDataBuilder } from './IBuilder'
-import { IQueryBuilder } from './IQuery'
+import { IDataBuilder } from '../interfaces/IBuilder'
+import { IQueryBuilder } from '../interfaces/IQuery'
 
 export class GraphqlService implements IDataBuilder, IQueryBuilder {
   async query(data: any): Promise<any> {
