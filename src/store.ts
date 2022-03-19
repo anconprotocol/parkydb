@@ -1,71 +1,63 @@
-const fakeIndexedDB = require("fake-indexeddb");
-const fakeIDBKeyRange = require("fake-indexeddb/lib/FDBKeyRange");
+const fakeIndexedDB = require('fake-indexeddb')
+const fakeIDBKeyRange = require('fake-indexeddb/lib/FDBKeyRange')
 
-import { BaseBlockstore, CID } from "blockstore-core/base";
-import Dexie from "dexie";
-import MiniSearch from "minisearch";
-import { Block } from "multiformats/block";
-import {
-  getGraphQLWriter,
-  getJsonSchemaReader,
-  makeConverter,
-} from "typeconv";
-import { DAGJsonService } from "./dagjson";
-import { DocumentService } from "./document";
-const toJsonSchema = require("to-json-schema");
-const { MerkleJson } = require("merkle-json");
+import { BaseBlockstore, CID } from 'blockstore-core/base'
+import Dexie from 'dexie'
+import MiniSearch from 'minisearch'
+import { Block } from 'multiformats/block'
+import { getGraphQLWriter, getJsonSchemaReader, makeConverter } from 'typeconv'
+import { DAGJsonService } from './dagjson'
+import { DocumentService } from './document'
+import { GraphqlService } from './graphql'
+import { JsonSchemaService } from './jsonschema'
+const toJsonSchema = require('to-json-schema')
+const { MerkleJson } = require('merkle-json')
 
-const db: Dexie | any = new Dexie("ancon", {
+const db: Dexie | any = new Dexie('ancon', {
   indexedDB: fakeIndexedDB,
   IDBKeyRange: fakeIDBKeyRange,
-});
+})
 
 db.version(1).stores({
   blockdb: `
     &cid,
     topic,
     timestamp`,
-});
+})
 // db.blockdb.hook('creating', Hooks.createHook(db))
 
 export class ParkyDB {
+  private dagService = new DAGJsonService()
+  private documentService = new DocumentService()
+  private graphqlService = new GraphqlService()
+  private jsonschemaService = new JsonSchemaService()
+
+  constructor() {}
   async putBlock(payload: any) {
-    const dag = new DAGJsonService();
-    const block = await dag.build(payload);
-    return this.put(block.cid, block);
+    const block = await this.dagService.build(payload)
+    return this.put(block.cid, block)
   }
-  async put(key: CID, value: Block<any>) {  
-    
-    const reader = getJsonSchemaReader();
-    const writer = getGraphQLWriter();
-    const { convert } = makeConverter(reader, writer);
-    const jsch = toJsonSchema(value.value);
-    const { data } = await convert({
-      data: jsch,
-    });
-    const mj = new MerkleJson();
-    const graphqls = data;
+  async put(key: CID, value: Block<any>) {
+    const jsch = await this.jsonschemaService.build(value.value)
+    const mj = new MerkleJson()
+    const graphqls = await this.graphqlService.build(value.value)
 
     const miniSearch = new MiniSearch({
       fields: Object.keys(value.value),
-    });
+    })
 
-    const documentService = new DocumentService();
-
-    await miniSearch.addAllAsync([
-      { id: key.toString(), ...value.value },
-    ]);
+    await miniSearch.addAllAsync([{ id: key.toString(), ...value.value }])
     return db.blockdb.put({
       cid: key.toString(),
       dag: value,
-      document: await documentService.build(value),
+      document: await this.documentService.build(value),
       schemas: {
         jsonschema: jsch,
         graphqls,
       },
       hashtag: mj.hash(value.value),
       index: JSON.stringify(miniSearch),
-    });
+    })
   }
 
   // https://github.com/bradleyboy/tuql/blob/master/src/builders/schema.js
@@ -79,21 +71,21 @@ export class ParkyDB {
 
   // @ts-ignore
   async get(key, options) {
-    return db.blockdb.get({ cid: key });
+    return db.blockdb.get({ cid: key })
   }
   // @ts-ignore
   async filter(key, options) {
-    const props = db.blockdb.get({ cid: key });
-    return props;
+    const props = db.blockdb.get({ cid: key })
+    return props
   }
   // @ts-ignore
   async dbQuery(key, options) {
-    const props = db.blockdb.get({ cid: key });
-    return props;
+    const props = db.blockdb.get({ cid: key })
+    return props
   }
   // @ts-ignore
   async gqlQuery(key, options) {
-    const props = db.blockdb.get({ cid: key });
-    return props;
+    const props = db.blockdb.get({ cid: key })
+    return props
   }
 }

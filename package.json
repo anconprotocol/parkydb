@@ -25,6 +25,8 @@
     "dexie": "^3.2.1",
     "fake-indexeddb": "^3.1.7",
     "graphql": "^16.3.0",
+    "graphql-compose": "^9.0.7",
+    "graphql-compose-json": "^6.2.0",
     "indexeddbshim": "^2.2.1",
     "js-waku": "^0.19.1-babel.0",
     "lokijs": "^1.5.12",

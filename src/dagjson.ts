@@ -1,7 +1,7 @@
 import * as Block from 'multiformats/block'
 import * as codec from '@ipld/dag-json'
 import { sha256 as hasher } from 'multiformats/hashes/sha2'
-import { IDataBuilder } from '../interfaces/IBuilder'
+import { IDataBuilder } from './interfaces/IBuilder'
 
 export class DAGJsonService implements IDataBuilder {
   async build(value: object) {
