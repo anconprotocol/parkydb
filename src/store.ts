@@ -5,7 +5,6 @@ import { BaseBlockstore, CID } from 'blockstore-core/base'
 import Dexie from 'dexie'
 import MiniSearch from 'minisearch'
 import { Block } from 'multiformats/block'
-import { getGraphQLWriter, getJsonSchemaReader, makeConverter } from 'typeconv'
 import { DAGJsonService } from './dagjson'
 import { DocumentService } from './document'
 import { GraphqlService } from './graphql'
@@ -40,8 +39,6 @@ export class ParkyDB {
   async put(key: CID, value: Block<any>) {
     const jsch = await this.jsonschemaService.build(value.value)
     const mj = new MerkleJson()
-    const graphqls = await this.graphqlService.build(value.value)
-
     const miniSearch = new MiniSearch({
       fields: Object.keys(value.value),
     })
@@ -50,10 +47,10 @@ export class ParkyDB {
     return db.blockdb.put({
       cid: key.toString(),
       dag: value,
-      document: await this.documentService.build(value),
+      document: value.value,
       schemas: {
         jsonschema: jsch,
-        graphqls,
+        graphqls: this.graphqlService.defaultTypeDefinitions,
       },
       hashtag: mj.hash(value.value),
       index: JSON.stringify(miniSearch),
@@ -78,14 +75,12 @@ export class ParkyDB {
     const props = db.blockdb.get({ cid: key })
     return props
   }
-  // @ts-ignore
-  async dbQuery(key, options) {
+  async query(key: any, options: any) {
     const props = db.blockdb.get({ cid: key })
-    return props
-  }
-  // @ts-ignore
-  async gqlQuery(key, options) {
-    const props = db.blockdb.get({ cid: key })
-    return props
+    const ctx = {
+      ...options,
+    }
+    const res = await this.graphqlService.query(ctx, props);
+    return res
   }
 }

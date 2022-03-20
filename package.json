@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "generate": "graphql-codegen"
   },
   "repository": {
     "type": "git",
@@ -17,6 +18,10 @@
   },
   "homepage": "https://github.com/anconprotocol/data-agent-library#readme",
   "dependencies": {
+    "@graphql-codegen/core": "^2.5.1",
+    "@graphql-codegen/typescript": "^2.4.8",
+    "@graphql-codegen/typescript-operations": "^2.3.5",
+    "@graphql-codegen/typescript-resolvers": "^2.6.1",
     "@ipld/dag-cbor": "^7.0.1",
     "@ipld/dag-json": "^8.0.8",
     "@multiformats/sha3": "^2.0.8",
@@ -27,6 +32,9 @@
     "graphql": "^16.3.0",
     "graphql-compose": "^9.0.7",
     "graphql-compose-json": "^6.2.0",
+    "graphql-helix": "^1.12.0",
+    "graphql-tools": "^8.2.1",
+    "graphql-type-json": "^0.3.2",
     "indexeddbshim": "^2.2.1",
     "js-waku": "^0.19.1-babel.0",
     "lokijs": "^1.5.12",
@@ -38,6 +46,7 @@
     "yjs": "^13.5.28"
   },
   "devDependencies": {
+    "@graphql-codegen/cli": "^2.6.2",
     "@types/sql.js": "^1.4.3",
     "ts-node": "^10.7.0"
   }

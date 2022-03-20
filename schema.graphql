@@ -1,0 +1,10 @@
+scalar JSON
+scalar JSONObject
+
+type Query {
+    blocks: [JSON]
+}
+
+type Mutation {
+    put: JSON
+}

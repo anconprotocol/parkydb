@@ -1,3 +1,3 @@
 export interface IQueryBuilder{
-    query(data: any): Promise<any>;
+    query(ctx: any, data: any, options?: any): Promise<any>;
 }
