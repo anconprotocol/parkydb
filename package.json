@@ -1,6 +1,6 @@
 {
   "name": "data-agent-library",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -33,6 +33,8 @@
     "graphql-compose": "^9.0.7",
     "graphql-compose-json": "^6.2.0",
     "graphql-helix": "^1.12.0",
+    "graphql-request": "^4.1.0",
+    "graphql-tag": "^2.12.6",
     "graphql-tools": "^8.2.1",
     "graphql-type-json": "^0.3.2",
     "indexeddbshim": "^2.2.1",

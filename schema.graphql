@@ -2,7 +2,7 @@ scalar JSON
 scalar JSONObject
 
 type Query {
-    blocks: [JSON]
+    block(key: String): JSONObject
 }
 
 type Mutation {

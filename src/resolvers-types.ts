@@ -22,7 +22,12 @@ export type Mutation = {
 
 export type Query = {
   __typename?: 'Query';
-  blocks?: Maybe<Array<Maybe<Scalars['JSON']>>>;
+  block?: Maybe<Scalars['JSONObject']>;
+};
+
+
+export type QueryBlockArgs = {
+  key?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -36,7 +41,7 @@ export type ResolverWithResolve<TResult, TParent, TContext, TArgs> = {
 export type Resolver<TResult, TParent = {}, TContext = {}, TArgs = {}> = ResolverFn<TResult, TParent, TContext, TArgs> | ResolverWithResolve<TResult, TParent, TContext, TArgs>;
 
 export type ResolverFn<TResult, TParent, TContext, TArgs> = (
-  parent: TParent,          
+  parent: TParent,
   args: TArgs,
   context: TContext,
   info: GraphQLResolveInfo
@@ -125,7 +130,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
 };
 
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
-  blocks?: Resolver<Maybe<Array<Maybe<ResolversTypes['JSON']>>>, ParentType, ContextType>;
+  block?: Resolver<Maybe<ResolversTypes['JSONObject']>, ParentType, ContextType, Partial<QueryBlockArgs>>;
 };
 
 export type Resolvers<ContextType = any> = {

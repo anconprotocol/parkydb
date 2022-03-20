@@ -8,7 +8,10 @@ import { Block } from 'multiformats/block'
 import { DAGJsonService } from './dagjson'
 import { DocumentService } from './document'
 import { GraphqlService } from './graphql'
+import { BlockValue } from './interfaces/blockvalue'
 import { JsonSchemaService } from './jsonschema'
+import { ResolverContext } from './ResolverContext'
+import { ServiceContext } from './ServiceContext'
 const toJsonSchema = require('to-json-schema')
 const { MerkleJson } = require('merkle-json')
 
@@ -76,11 +79,11 @@ export class ParkyDB {
     return props
   }
   async query(key: any, options: any) {
-    const props = db.blockdb.get({ cid: key })
     const ctx = {
       ...options,
-    }
-    const res = await this.graphqlService.query(ctx, props);
+      db
+    } as ServiceContext
+    const res = await this.graphqlService.query(ctx, null);
     return res
   }
 }
