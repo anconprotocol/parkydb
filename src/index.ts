@@ -1,1 +1,1 @@
-// export of all classes
+export * from './store'

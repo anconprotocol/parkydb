@@ -1,9 +1,11 @@
 import Dexie from 'dexie';
 import { DocumentNode } from 'graphql';
+import { BlockValue } from './interfaces/blockvalue';
 
 export interface ServiceContext {
-  request: any;
   db: Dexie;
+  id: string;
+  state: BlockValue;
   variables: any;
   operationName: string | undefined;
   query: string | DocumentNode | undefined;

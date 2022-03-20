@@ -1,4 +1,3 @@
-import { DAGJsonService } from './dagjson'
 import { ParkyDB } from './store'
 
 async function bootstrap() {
@@ -48,20 +47,18 @@ async function bootstrap() {
   }
   const id = await db.putBlock(payload)
   const res = await db.get(id, null)
-  const q = await db.query(id, {
+  const q = await db.query({
+    cid: id,
     query: `
     query{
-      block(key: "${id}"){
-      content{
-        image,
-        name,
-        owner
-      }
-    }
-  }   
+       block(cid: "${id}") {
+         network
+         key
+       }
+    }   
     `,
   })
-  console.log(q, res.schemas.jsonschema)
+  console.log(q.data.block, res.schemas.jsonschema)
 }
 
 // https://graphql-compose.github.io/docs/plugins/plugin-json.html

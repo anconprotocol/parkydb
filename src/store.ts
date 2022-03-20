@@ -53,37 +53,26 @@ export class ParkyDB {
       document: value.value,
       schemas: {
         jsonschema: jsch,
-        graphqls: this.graphqlService.defaultTypeDefinitions,
+        graphqls: await this.graphqlService.build(value.value),
       },
       hashtag: mj.hash(value.value),
       index: JSON.stringify(miniSearch),
     })
   }
 
-  // https://github.com/bradleyboy/tuql/blob/master/src/builders/schema.js
-  // async put(key, val, options) {
-  //   // store a block
-  /* layer 1 immutable saves the key and value
-  layer 2 transforms json to graph, graph to sqlite and save to dexie block
-  // } insert into , first have to create a block schema
-  options:(tpic, format)
-  */
-
-  // @ts-ignore
-  async get(key, options) {
+  async get(key: any, options: any) {
     return db.blockdb.get({ cid: key })
   }
-  // @ts-ignore
-  async filter(key, options) {
-    const props = db.blockdb.get({ cid: key })
+
+  async filter(options: any) {
+    const props = db.blockdb.get({ cid: options.key })
     return props
   }
-  async query(key: any, options: any) {
+  async query(options: any) {
     const ctx = {
       ...options,
-      db
+      db,
     } as ServiceContext
-    const res = await this.graphqlService.query(ctx, null);
-    return res
+    return this.graphqlService.query(ctx, null)
   }
 }

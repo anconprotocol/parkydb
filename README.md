@@ -25,19 +25,19 @@ Stores key as cid or custom (topic) and values in the layered approached with a 
 
 ### DAG  (Linkable and Verifiable Layer - Layer 1)  
 
-Stores as an IPLD Multiformats DAG Block. Input must be a JSON payload. Can support either CBOR or JSON. This layer keeps data immutable (no mutations allowed).
+Stores as an IPLD Multiformats DAG Block. Input must be a JSON payload. Can support either CBOR or JSON. This layer keeps data immutable (no mutations allowed) and uses special directives with query layer.
 
 ### Document (Document Layer - Layer 2) 
 
-Stores as a LokiJS serialized JSON. Input must be a JSON payload. Used for queries only and represents a snapshot of the immutable data in DAG.
+Stores as a JSON. Input must be a JSON payload. Used for queries only and represents a snapshot of the immutable data in DAG.
 
 ### Index (Query and index Layer - Layer 3)  
 
-Stores as a Minisearch filter index. Input must be JSON payload. Used for search only and represents the JSON payload index.
+Stores as a Minisearch filter index. Input must be JSON payload. Used for search only and represents the JSON payload index, the `@filter` GraphQL directive will enable filtering.
 
 ### GraphQL Schema (Query and index Layer - Layer 3)  
 
-Stores a GraphQL Schema. Used with on-demand GraphQL APIs that enables querying the DB and Index layer. Mutations are immutable PUTs in DAG.
+Stores a GraphQL Schema. Used with on-demand GraphQL APIs that enables querying the DB and Index layer. Mutations are immutable PUTs in DAG. It also integrates different GraphQL stores using Mesh and appends the data as blocks in the database.
 
 ### JSON Schema (Verifiable Document Layer - Layer 4)
 
@@ -45,5 +45,35 @@ Stores a JSON Schema. Used to create `Verifiable Data Document`  dapps which  mi
 
 ### Protobuf Schema (Messaging Layer - Layer 5)
 
-Stores a Protobuf Schema. Used to integrate data library with Waku.
+Stores a Protobuf Schema. Used to integrate data library with Waku and decentralized full nodes
 
+
+## API v0.1.0
+
+### Store
+
+```typescript
+import { ParkyDB } from 'parkydb'
+
+// Instantiate new DB instance
+const db = new ParkyDB()
+
+// Writes a DAG JSON block
+const id = await db.putBlock(payload)
+
+// Fetch an existing DAG block
+const res = await db.get(id)
+
+// Queries with GraphQL a JSON snapshot of the DAG block
+const q = await db.query({
+    cid: id,
+    query: `
+    query{
+       block(cid: "${id}") {
+         network
+         key
+       }
+    }   
+    `,
+  })
+```

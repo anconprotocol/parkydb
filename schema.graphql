@@ -1,10 +1,11 @@
 scalar JSON
 scalar JSONObject
 
+
 type Query {
-    block(key: String): JSONObject
+    block(key: String): JSONObject!
 }
 
 type Mutation {
-    put: JSON
+    put: JSONObject
 }
