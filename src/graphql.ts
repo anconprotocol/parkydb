@@ -55,6 +55,9 @@ export class GraphqlService implements IDataBuilder, IQueryBuilder {
 
   get defaultTypeDefinitions() {
     return `
+    scalar JSON
+    scalar JSONObject
+        
     type Query {
       blocks: [JSON]
     }
