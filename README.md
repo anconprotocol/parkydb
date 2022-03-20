@@ -1,4 +1,6 @@
-# Ancon ParkyDB
+# Ancon ParkyDB - A data mesh database using Web 3.0 technology 
+
+More about [data mesh architecture](https://www.datamesh-architecture.com/) 
 
 ![ParkyDB (2)](https://user-images.githubusercontent.com/1248071/159067543-a3afb7dd-c3e0-45f8-be96-9ff20083f488.png)
 
