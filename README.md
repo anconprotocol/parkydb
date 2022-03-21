@@ -80,3 +80,154 @@ const q = await db.query({
     `,
   })
 ```
+
+## Unreleased
+
+### Topics and Subscriptions
+
+```typescript
+import { ParkyDB } from 'parkydb'
+
+// Instantiate new DB instance
+const db = new ParkyDB()
+await db.initialize()
+
+// Writes a DAG JSON block
+const id = await db.putBlock(payload)
+
+// Fetch an existing DAG block
+const res = await db.get(id)
+
+const topic = await db.createTopic('db/test/public/proto')
+await topic.send({
+  cid
+})
+const obs = await topic.send({
+  domain: 'test'
+})
+
+const listener = await db.subscribeTopic('db/main/public/proto')
+
+// Queries with GraphQL a JSON snapshot of the DAG block
+const q = await db.query({
+    cid: id,
+    query: `
+    query{
+       block(cid: "${id}") {
+         network
+         key
+       }
+    }   
+    `,
+  })
+```
+
+
+### Wallet
+
+```typescript
+import { ParkyDB } from 'parkydb'
+
+// Instantiate new DB instance
+const db = new ParkyDB()
+await db.initialize({
+  enableWallet: true  // Uses metamask open source keyring
+})
+
+
+await db.wallet.add({
+    options,
+  })
+await db.wallet.remove({
+    options,
+  })
+await db.wallet.find({
+    options,
+  })
+await db.wallet.sign({
+    options,
+  })
+await db.wallet.setDefault({
+    options,
+  })
+
+// Writes a DAG JSON block
+const id = await db.putBlock(payload)
+
+// Fetch an existing DAG block
+const res = await db.get(id)
+
+// Queries with GraphQL a JSON snapshot of the DAG block
+const q = await db.query({
+    cid: id,
+    query: `
+    query{
+       block(cid: "${id}") {
+         network
+         key
+       }
+    }   
+    `,
+  })
+```
+
+### Protocols
+
+```typescript
+  // These calls will ask for signature
+  // Publish
+ const receipt =  await db.publish({
+    cid,
+    topic?,
+    recipients,
+    service: 'ancon' | 'ipfs' | 'parkydb'  | 'swarm',
+    options,
+  })
+
+  // Send as a DAG block or message
+ const cid = await db.send({
+    payload,
+    topic?,
+    recipients,
+    service: 'ancon' | 'ipfs' | 'parkydb' | 'swarm',
+    options,
+  })
+  
+
+   // Send as transaction
+ const cid = await db.sendTransaction({
+    payload,
+    topic?,
+    service: 'web3' | 'ethers' | 'filecoin',
+    options,
+  })
+  ```
+
+  
+### Verifiable Document
+
+```typescript
+  // These calls will ask for signature
+ const receipt =  await db.makeAndSignAppDocument({
+    cid,
+    topic,
+    recipients,
+    uiServiceHash,
+    options,
+  })
+
+ const receipt =  await db.makeAndSignDappDocument({
+    cid,
+    topic,
+    uiServiceHash,
+    options,
+  })
+  
+
+   // Send as transaction
+ const cid = await db.deployService({
+    payload,
+    service,
+    options,
+  })
+  ```

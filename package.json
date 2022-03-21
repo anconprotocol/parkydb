@@ -42,6 +42,7 @@
     "merkle-json": "^2.0.0",
     "minisearch": "^4.0.3",
     "multiformats": "^9.6.4",
+    "protobufjs": "^6.11.2",
     "to-json-schema": "^0.2.5",
     "yjs": "^13.5.28"
   },
