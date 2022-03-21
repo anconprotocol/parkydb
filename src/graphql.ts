@@ -3,13 +3,13 @@ import {
   GraphQLObjectType,
   GraphQLSchema,
 } from 'graphql'
-import { makeExecutableSchema } from 'graphql-tools'
 import { IDataBuilder } from './interfaces/IBuilder'
 import { IQueryBuilder } from './interfaces/IQuery'
 import { ServiceContext } from './ServiceContext'
 import gql from 'graphql-tag'
 import composeWithJson from 'graphql-compose-json'
 import { schemaComposer } from 'graphql-compose'
+import { makeExecutableSchema } from '@graphql-tools/schema'
 
 export class GraphqlService implements IDataBuilder, IQueryBuilder {
   async query(ctx: ServiceContext, options: any = {}): Promise<any> {

@@ -1,5 +1,7 @@
 # Ancon ParkyDB - A data mesh database using Web 3.0 technology 
 
+>Note: Requires Node v17.7.2 and up for development
+
 More about [data mesh architecture](https://www.datamesh-architecture.com/) 
 
 ![ParkyDB (2)](https://user-images.githubusercontent.com/1248071/159067543-a3afb7dd-c3e0-45f8-be96-9ff20083f488.png)
@@ -57,6 +59,7 @@ import { ParkyDB } from 'parkydb'
 
 // Instantiate new DB instance
 const db = new ParkyDB()
+await db.initialize()
 
 // Writes a DAG JSON block
 const id = await db.putBlock(payload)
