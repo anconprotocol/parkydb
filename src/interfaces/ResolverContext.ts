@@ -1,4 +1,4 @@
-import { BlockValue } from './interfaces/blockvalue';
+import { BlockValue } from './Blockvalue';
 
 
 export interface ResolverContext {

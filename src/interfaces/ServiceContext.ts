@@ -1,6 +1,6 @@
 import Dexie from 'dexie';
 import { DocumentNode } from 'graphql';
-import { BlockValue } from './interfaces/blockvalue';
+import { BlockValue } from './Blockvalue';
 
 export interface ServiceContext {
   db: Dexie;

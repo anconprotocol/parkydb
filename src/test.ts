@@ -1,4 +1,4 @@
-import { ParkyDB } from './store'
+import { ParkyDB } from './core/db'
 
 const payload = {
   commitHash: 'xg8pyBr3McqYlUgxAqV0t3s6TRcP+B7MHyPTtyVKMJw=',

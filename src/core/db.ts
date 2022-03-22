@@ -8,9 +8,10 @@ import MiniSearch from 'minisearch'
 import { Block } from 'multiformats/block'
 import { DAGJsonService } from './dagjson'
 import { DocumentService } from './document'
-import { GraphqlService } from './graphql'
+import { GraphqlService } from '../query/graphql'
 import { JsonSchemaService } from './jsonschema'
-import { ServiceContext } from './ServiceContext'
+import { ServiceContext } from '../interfaces/ServiceContext'
+import { MessagingService } from './messaging'
 const toJsonSchema = require('to-json-schema')
 const { MerkleJson } = require('merkle-json')
 
@@ -27,28 +28,20 @@ db.version(1).stores({
 })
 // db.blockdb.hook('creating', Hooks.createHook(db))
 
+/**
+ * ParkyDB core class
+ */
 export class ParkyDB {
   private dagService = new DAGJsonService()
   private documentService = new DocumentService()
   private graphqlService = new GraphqlService()
   private jsonschemaService = new JsonSchemaService()
-  waku: any
+  private messagingService = new MessagingService();
 
   constructor() {}
   async initialize() {
-    const waku = await Waku.create({ bootstrap: { default: true } })
-
-    // Wait to be connected to at least one peer
-    await new Promise((resolve, reject) => {
-      // If we are not connected to any peer within 10sec let's just reject
-      // As we are not implementing connection management in this example
-
-      setTimeout(reject, 10000)
-      waku.libp2p.connectionManager.on('peer:connect', () => {
-        resolve(null)
-      })
-    })
-    this.waku = waku
+    
+    this.messagingService.bootstrap();
   }
   async putBlock(payload: any) {
     const block = await this.dagService.build(payload)

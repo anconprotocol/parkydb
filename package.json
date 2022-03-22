@@ -38,11 +38,13 @@
     "graphql-tag": "^2.12.6",
     "indexeddbshim": "^2.2.1",
     "js-waku": "^0.19.2",
+    "jsonschema-protobuf": "^1.0.2",
     "lokijs": "^1.5.12",
     "merkle-json": "^2.0.0",
     "minisearch": "^4.0.3",
     "multiformats": "^9.6.4",
     "protobufjs": "^6.11.2",
+    "rxjs": "^7.5.5",
     "to-json-schema": "^0.2.5",
     "yjs": "^13.5.28"
   },

@@ -1,6 +1,6 @@
 const toJsonSchema = require('to-json-schema')
-import { IDataBuilder } from './interfaces/IBuilder'
-import { IQueryBuilder } from './interfaces/IQuery'
+import { IDataBuilder } from '../interfaces/IBuilder'
+import { IQueryBuilder } from '../interfaces/IQuery'
 export class IndexService implements IDataBuilder, IQueryBuilder {
   constructor(private currentIndex?: any) {}
   async load(key: any, data: any): Promise<any> {}
