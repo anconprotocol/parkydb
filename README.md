@@ -90,7 +90,7 @@ import { ParkyDB } from 'parkydb'
 // Instantiate new DB instance
 const db = new ParkyDB()
 await db.initialize()
-const topic = `/anconprotocol/1/marketplace/ipld`
+const topic = `/anconprotocol/1/marketplace/ipld-dag-json`
 
 // Writes a DAG JSON block
 const id = await db.putBlock({...payload, topic})
@@ -112,19 +112,21 @@ const pubsub = await db.createTopicPubsub(topic)
 //   close: () 
 // }
 
+pubsub.onBlockReply$.subscribe((block)=> {
 
-// Queries with GraphQL a JSON snapshot of the DAG block
-const q = await db.query({
-    cid: id,
-    query: `
-    query{
-       block(cid: "${id}") {
-         network
-         key
-       }
-    }   
-    `,
-  })
+  // GraphQL
+  const q = await db.query({
+      block,
+      query: `
+      query{
+        block(cid: "${id}") {
+          network
+          key
+        }
+      }   
+      `,
+    })
+})  
 ```
 
 ## Unreleased

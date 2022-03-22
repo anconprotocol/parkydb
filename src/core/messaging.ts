@@ -29,7 +29,13 @@ export class MessagingService implements IMessaging {
   ): Promise<any> {
     // Topic subscriber observes for DAG blocks (IPLD as bytes)
     const pubsub = new Subject<any>()
-    this.waku.relay.addObserver(pubsub.next, [topic])
+    this.waku.relay.addObserver(
+      (msg: any) => {
+        // TODO: middleware
+        pubsub.next(msg)
+      },
+      [topic],
+    )
 
     // Topic publisher observes for block publisher and sends these blocks with Waku P2P
     const cancel = blockPublisher.subscribe(async (block: BlockValue) => {
