@@ -1,9 +1,11 @@
 const fakeIndexedDB = require('fake-indexeddb')
 const fakeIDBKeyRange = require('fake-indexeddb/lib/FDBKeyRange')
-const { getPredefinedBootstrapNodes, Waku, Protocols } = require('js-waku')
 
 import { CID } from 'blockstore-core/base'
 import Dexie from 'dexie'
+import 'dexie-observable';
+
+
 import MiniSearch from 'minisearch'
 import { Block } from 'multiformats/block'
 import { DAGJsonService } from './dagjson'
@@ -12,6 +14,9 @@ import { GraphqlService } from '../query/graphql'
 import { JsonSchemaService } from './jsonschema'
 import { ServiceContext } from '../interfaces/ServiceContext'
 import { MessagingService } from './messaging'
+import { Hooks } from './hooks'
+import { Subject } from 'rxjs';
+import { BlockValue } from '../interfaces/Blockvalue';
 const toJsonSchema = require('to-json-schema')
 const { MerkleJson } = require('merkle-json')
 
@@ -26,7 +31,6 @@ db.version(1).stores({
     topic,
     timestamp`,
 })
-// db.blockdb.hook('creating', Hooks.createHook(db))
 
 /**
  * ParkyDB core class
@@ -36,12 +40,14 @@ export class ParkyDB {
   private documentService = new DocumentService()
   private graphqlService = new GraphqlService()
   private jsonschemaService = new JsonSchemaService()
-  private messagingService = new MessagingService();
-
+  private messagingService = new MessagingService()
+  private hooks = new Hooks()
+  private onBlockCreated = new Subject<BlockValue>();
   constructor() {}
+
   async initialize() {
-    
-    this.messagingService.bootstrap();
+    await this.messagingService.bootstrap()
+    db.blockdb.hook('creating', this.hooks.attachRouter(this.onBlockCreated))
   }
   async putBlock(payload: any) {
     const block = await this.dagService.build(payload)
@@ -69,6 +75,10 @@ export class ParkyDB {
     })
   }
 
+  async createTopicPubsub(topic: string) {
+    // creates an observable and subscribes to store block creation
+    return this.messagingService.createTopic(topic, this.onBlockCreated)
+  }
   async get(key: any, options: any) {
     return db.blockdb.get({ cid: key })
   }

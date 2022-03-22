@@ -81,7 +81,6 @@ const q = await db.query({
   })
 ```
 
-## Unreleased
 
 ### Topics and Subscriptions
 
@@ -91,22 +90,28 @@ import { ParkyDB } from 'parkydb'
 // Instantiate new DB instance
 const db = new ParkyDB()
 await db.initialize()
+const topic = `/anconprotocol/1/marketplace/ipld`
 
 // Writes a DAG JSON block
-const id = await db.putBlock(payload)
+const id = await db.putBlock({...payload, topic})
 
 // Fetch an existing DAG block
 const res = await db.get(id)
 
-const topic = await db.createTopic('db/test/public/proto')
-await topic.send({
-  cid
-})
-const obs = await topic.send({
-  domain: 'test'
-})
+const pubsub = await db.createTopicPubsub(topic)
 
-const listener = await db.subscribeTopic('db/main/public/proto')
+// pubsub methods
+//  { 
+//   Streams blocks from topic message replies
+//   onBlockReply$: pubsub.asObservable(),
+//    
+//   On demand publishing
+//   publish: async (block: BlockValue),
+//   
+//   Closes any pending subscriptions
+//   close: () 
+// }
+
 
 // Queries with GraphQL a JSON snapshot of the DAG block
 const q = await db.query({
@@ -121,6 +126,8 @@ const q = await db.query({
     `,
   })
 ```
+
+## Unreleased
 
 
 ### Wallet

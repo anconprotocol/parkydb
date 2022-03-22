@@ -23,14 +23,29 @@ export class MessagingService implements IMessaging {
     await this.waku.waitForRemotePeer()
   }
 
-  async createTopic(topic: string): Promise<any> {
+  async createTopic(
+    topic: string,
+    blockPublisher: Subject<BlockValue>,
+  ): Promise<any> {
+    // Topic subscriber observes for DAG blocks (IPLD as bytes)
     const pubsub = new Subject<any>()
     this.waku.relay.addObserver(pubsub.next, [topic])
 
+    // Topic publisher observes for block publisher and sends these blocks with Waku P2P
+    const cancel = blockPublisher.subscribe(async (block: BlockValue) => {
+      const msg = await WakuMessage.fromBytes(block.dag.bytes, topic)
+      await this.waku.relay.send(msg)
+    })
+
     return {
+      onBlockReply$: pubsub.asObservable(),
+      // on demand publishing
       publish: async (block: BlockValue) => {
         const msg = await WakuMessage.fromBytes(block.dag.bytes, topic)
-        this.waku.relay.send(msg)
+        return this.waku.relay.send(msg)
+      },
+      close: () => {
+        if (cancel) cancel.unsubscribe()
       },
     }
   }
