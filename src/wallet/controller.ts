@@ -1,23 +1,29 @@
-const KeyringController = require('eth-keyring-controller');
-const SimpleKeyring = require('eth-simple-keyring');
+import { Ed25519Keyring } from './ed25519keyring'
 
-const keyringController = new KeyringController({
-  keyringTypes: [SimpleKeyring], // optional array of types to support.
-  initState: initState.KeyringController, // Last emitted persisted state.
-  encryptor: {
-    // An optional object for defining encryption schemes:
-    // Defaults to Browser-native SubtleCrypto.
-    encrypt(password, object) {
-      return new Promise('encrypted!');
-    },
-    decrypt(password, encryptedString) {
-      return new Promise({ foo: 'bar' });
-    },
-  },
-});
+const KeyringController = require('eth-keyring-controller')
+const HD = require('eth-hd-keyring')
 
-// The KeyringController is also an event emitter:
-this.keyringController.on('newAccount', (address) => {
-  console.log(`New account created: ${address}`);
-});
-this.keyringController.on('removedAccount', handleThat);
+export class WalletController {
+  keyringController: any;
+  constructor() {
+    this.keyringController = new KeyringController({
+      keyringTypes: [HD, Ed25519Keyring], // optional array of types to support.
+    //  initState: initState.KeyringController, // Last emitted persisted state.
+      // encryptor: {
+      //   // An optional object for defining encryption schemes:
+      //   // Defaults to Browser-native SubtleCrypto.
+      //   encrypt(password, object) {
+      //     return new Promise('encrypted!');
+      //   },
+      //   decrypt(password, encryptedString) {
+      //     return new Promise({ foo: 'bar' });
+      //   },
+      // },
+    })
+  }
+
+  async createVault(password: string){
+    await this.keyringController.createNewVaultAndKeychain(password);
+    await this.keyringController.persistAllKeyrings();
+  }
+}

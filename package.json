@@ -34,6 +34,7 @@
     "dexie-observable": "^3.0.0-beta.11",
     "eth-hd-keyring": "^3.6.0",
     "eth-keyring-controller": "^6.2.1",
+    "eventemitter3": "^4.0.7",
     "fake-indexeddb": "^3.1.7",
     "graphql": "^16.3.0",
     "graphql-compose": "^9.0.7",
