@@ -1,13 +1,13 @@
 import * as ed from '@noble/ed25519'
-import EventEmitter from 'eventemitter3'
-const type = 'Ed25519'
+const SimpleKeyring = require('eth-simple-keyring')
 
-export class Ed25519Keyring extends EventEmitter {
-  type: string
+
+export class Ed25519 extends SimpleKeyring {
+  static type: string = 'Ed25519'
   _wallets: { privateKey: Uint8Array; publicKey: Uint8Array }[]
   constructor(opts: any) {
     super()
-    this.type = type
+
     this._wallets = []
     this.deserialize(opts)
   }

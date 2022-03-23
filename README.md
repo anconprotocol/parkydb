@@ -50,7 +50,15 @@ Stores a JSON Schema. Used to create `Verifiable Data Document`  dapps which  mi
 Stores a Protobuf Schema. Used to integrate data library with Waku and decentralized full nodes
 
 
-## API v0.1.0
+## Run tests
+
+We using Ava test framework
+
+>Note: Enable OpenSSL legacy support. `export NODE_OPTIONS="--openssl-legacy-provider"`
+
+1. npm test
+
+## API v0.2.0
 
 ### Store
 
@@ -129,8 +137,6 @@ pubsub.onBlockReply$.subscribe((block)=> {
 })  
 ```
 
-## Unreleased
-
 
 ### Wallet
 
@@ -140,45 +146,25 @@ import { ParkyDB } from 'parkydb'
 // Instantiate new DB instance
 const db = new ParkyDB()
 await db.initialize({
-  enableWallet: true  // Uses metamask open source keyring
+  // Remember these values come from a CLI or UI, DO NOT hardcode when implementing
+  withWallet: {
+    password: '',
+    // Note: Invented this mnemonic rap, 12 words, as my way to protest #WARINUKRAINE
+    seed: 'lumber brown jack house bomb cluster star method guard against war peace',
+  }
 })
 
+// Where `db.wallet` is metamask keyring controller. See https://github.com/MetaMask/KeyringController
+// ParkyDB has an Ed22519 implementation for DID and HPKE use cases
+await db.wallet.addNewKeyring('Ed25519', [
+  'c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3',
+])
 
-await db.wallet.add({
-    options,
-  })
-await db.wallet.remove({
-    options,
-  })
-await db.wallet.find({
-    options,
-  })
-await db.wallet.sign({
-    options,
-  })
-await db.wallet.setDefault({
-    options,
-  })
-
-// Writes a DAG JSON block
-const id = await db.putBlock(payload)
-
-// Fetch an existing DAG block
-const res = await db.get(id)
-
-// Queries with GraphQL a JSON snapshot of the DAG block
-const q = await db.query({
-    cid: id,
-    query: `
-    query{
-       block(cid: "${id}") {
-         network
-         key
-       }
-    }   
-    `,
-  })
+// Wallet is used internally or by setting options to specific usage. See Protocols for how to encrypt and sign.
 ```
+
+
+## Unreleased
 
 ### Protocols
 

@@ -1,10 +1,10 @@
 {
-  "name": "data-agent-library",
-  "version": "0.1.0 ",
+  "name": "parkydb",
+  "version": "0.2.0 ",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "ava",
+    "test": "ava --no-worker-threads",
     "generate": "graphql-codegen"
   },
   "repository": {
@@ -33,7 +33,9 @@
     "dexie": "^3.2.1",
     "dexie-observable": "^3.0.0-beta.11",
     "eth-hd-keyring": "^3.6.0",
-    "eth-keyring-controller": "^6.2.1",
+    "eth-keyring-controller": "github:MetaMask/KeyringController",
+    "eth-simple-keyring": "^4.2.0",
+    "ethereum-cryptography": "^1.0.3",
     "eventemitter3": "^4.0.7",
     "fake-indexeddb": "^3.1.7",
     "graphql": "^16.3.0",
@@ -58,12 +60,16 @@
     "@types/sql.js": "^1.4.3",
     "ava": "^4.1.0",
     "ts-node": "^10.7.0"
-  },"ava": {
-		"extensions": [
-			"ts"
-		],
-		"require": [
-			"ts-node/register"
-		]
-	}
+  },
+  "ava": {
+    "extensions": [
+      "ts"
+    ],
+    "require": [
+      "ts-node/register"
+    ]
+  },
+  "engines": {
+    "node": ">=17"
+  }
 }

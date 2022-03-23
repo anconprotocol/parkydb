@@ -1,29 +1,28 @@
-import { Ed25519Keyring } from './ed25519keyring'
+import { Ed25519 } from './ed25519keyring'
 
 const KeyringController = require('eth-keyring-controller')
-const HD = require('eth-hd-keyring')
+const SimpleKeyring = require('eth-simple-keyring')
 
 export class WalletController {
-  keyringController: any;
+  private keyringController: any
   constructor() {
-    this.keyringController = new KeyringController({
-      keyringTypes: [HD, Ed25519Keyring], // optional array of types to support.
-    //  initState: initState.KeyringController, // Last emitted persisted state.
-      // encryptor: {
-      //   // An optional object for defining encryption schemes:
-      //   // Defaults to Browser-native SubtleCrypto.
-      //   encrypt(password, object) {
-      //     return new Promise('encrypted!');
-      //   },
-      //   decrypt(password, encryptedString) {
-      //     return new Promise({ foo: 'bar' });
-      //   },
-      // },
-    })
   }
 
-  async createVault(password: string){
-    await this.keyringController.createNewVaultAndKeychain(password);
-    await this.keyringController.persistAllKeyrings();
+  load(vaultStorage: any = {}) {
+    this.keyringController = new KeyringController({
+      keyringTypes: [Ed25519, SimpleKeyring],
+      initState: vaultStorage      
+    })    
+  }
+
+  get wallet() {
+    return this.keyringController
+  }
+ 
+  async createVault(password: string, seed?: string) {
+    if (seed) {
+      await this.keyringController.createNewVaultAndRestore(password, seed)
+    }
+    await this.keyringController.createNewVaultAndKeychain(password)
   }
 }

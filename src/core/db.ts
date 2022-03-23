@@ -16,6 +16,7 @@ import { MessagingService } from './messaging'
 import { Hooks } from './hooks'
 import { Subject } from 'rxjs'
 import { BlockValue } from '../interfaces/Blockvalue'
+import { WalletController } from '../wallet/controller'
 const toJsonSchema = require('to-json-schema')
 const { MerkleJson } = require('merkle-json')
 
@@ -34,17 +35,25 @@ db.version(1).stores({
 /**
  * ParkyDB core class
  */
-export class ParkyDB {
+export class ParkyDB extends WalletController {
   private dagService = new DAGJsonService()
   private documentService = new DocumentService()
   private graphqlService = new GraphqlService()
   private jsonschemaService = new JsonSchemaService()
   private messagingService = new MessagingService()
+  
   private hooks = new Hooks()
   private onBlockCreated = new Subject<BlockValue>()
-  constructor() {}
+  
+  constructor() {
+    super()
+  }
 
-  async initialize() {
+  async initialize(options: any = {}) {
+    if (options.withWallet) {
+      this.load()
+      await this.createVault(options.withWallet.password, options.withWallet.seed)
+    }
     await this.messagingService.bootstrap()
     db.blockdb.hook('creating', this.hooks.attachRouter(this.onBlockCreated))
   }

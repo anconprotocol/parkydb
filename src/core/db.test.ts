@@ -1,6 +1,6 @@
 import test from 'ava'
 
-import { ParkyDB } from './core/db'
+import { ParkyDB } from './db'
 
 const payload = {
   commitHash: 'xg8pyBr3McqYlUgxAqV0t3s6TRcP+B7MHyPTtyVKMJw=',
@@ -75,3 +75,4 @@ test('put', async (t) => {
 
   t.is(id, 'baguqeera73x5r73wfcwikxqxm6i3chhbvdhymsrekxkef6ejm3ymi4u2e4zq')
 })
+
