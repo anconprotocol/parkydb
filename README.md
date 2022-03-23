@@ -54,9 +54,14 @@ Stores a Protobuf Schema. Used to integrate data library with Waku and decentral
 
 We using Ava test framework
 
->Note: Enable OpenSSL legacy support. `export NODE_OPTIONS="--openssl-legacy-provider"`
+`npm test`
 
-1. npm test
+
+>Note: Enable OpenSSL legacy support.
+
+`export NODE_OPTIONS="--openssl-legacy-provider"`
+
+
 
 ## API v0.2.0
 
