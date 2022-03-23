@@ -1,3 +1,5 @@
+import test from 'ava'
+
 import { ParkyDB } from './core/db'
 
 const payload = {
@@ -5,8 +7,7 @@ const payload = {
   contentHash: {
     '/': 'baguqeerahiqryfzwbjc2fn7is4k2uupilwtoxabtb6noifnwxznxszuvrg6a',
   },
-  digest:
-    '0x5ab3124ede7a511fbc7c6302b164d1547aefda8b5909b6bb637c7da025c3ffaf',
+  digest: '0x5ab3124ede7a511fbc7c6302b164d1547aefda8b5909b6bb637c7da025c3ffaf',
   height: 207,
   issuer: '0x32A21c1bB6E7C20F547e930b53dAC57f42cd25F6',
   key:
@@ -43,9 +44,21 @@ const payload = {
   },
 }
 
-async function bootstrap() {
+test.beforeEach(async (t) => {
   const db = new ParkyDB()
   await db.initialize()
+
+  t.context = {
+    db,
+  }
+})
+
+test('foo', (t) => {
+  t.pass()
+})
+
+test('put', async (t) => {
+  const { db } = t.context as any
   const id = await db.putBlock(payload)
   const res = await db.get(id, null)
   const q = await db.query({
@@ -59,10 +72,6 @@ async function bootstrap() {
     }   
     `,
   })
-  console.log(q.data.block, res.schemas.jsonschema)
-}
 
-// https://graphql-compose.github.io/docs/plugins/plugin-json.html
-// https://www.npmjs.com/package/graphql-to-mongodb
-
-bootstrap()
+  t.is(id, 'baguqeera73x5r73wfcwikxqxm6i3chhbvdhymsrekxkef6ejm3ymi4u2e4zq')
+})

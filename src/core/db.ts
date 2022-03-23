@@ -3,8 +3,7 @@ const fakeIDBKeyRange = require('fake-indexeddb/lib/FDBKeyRange')
 
 import { CID } from 'blockstore-core/base'
 import Dexie from 'dexie'
-import 'dexie-observable';
-
+import 'dexie-observable/api'
 
 import MiniSearch from 'minisearch'
 import { Block } from 'multiformats/block'
@@ -15,8 +14,8 @@ import { JsonSchemaService } from './jsonschema'
 import { ServiceContext } from '../interfaces/ServiceContext'
 import { MessagingService } from './messaging'
 import { Hooks } from './hooks'
-import { Subject } from 'rxjs';
-import { BlockValue } from '../interfaces/Blockvalue';
+import { Subject } from 'rxjs'
+import { BlockValue } from '../interfaces/Blockvalue'
 const toJsonSchema = require('to-json-schema')
 const { MerkleJson } = require('merkle-json')
 
@@ -42,7 +41,7 @@ export class ParkyDB {
   private jsonschemaService = new JsonSchemaService()
   private messagingService = new MessagingService()
   private hooks = new Hooks()
-  private onBlockCreated = new Subject<BlockValue>();
+  private onBlockCreated = new Subject<BlockValue>()
   constructor() {}
 
   async initialize() {

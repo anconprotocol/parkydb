@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "ava",
     "generate": "graphql-codegen"
   },
   "repository": {
@@ -56,6 +56,14 @@
   "devDependencies": {
     "@graphql-codegen/cli": "^2.6.2",
     "@types/sql.js": "^1.4.3",
+    "ava": "^4.1.0",
     "ts-node": "^10.7.0"
-  }
+  },"ava": {
+		"extensions": [
+			"ts"
+		],
+		"require": [
+			"ts-node/register"
+		]
+	}
 }
