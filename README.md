@@ -171,38 +171,39 @@ await db.wallet.addNewKeyring('Ed25519', [
 
 ## Unreleased
 
-### Protocols
+### Protocols (channels)
 
 ```typescript
-  // These calls will ask for signature
-  // Publish
- const receipt =  await db.publish({
-    cid,
-    topic?,
-    recipients,
-    service: 'ancon' | 'ipfs' | 'parkydb'  | 'swarm',
-    options,
-  })
+  // These calls are signed and encrypted
+const topic = `/anconprotocol/1/marketplace/ipld-dag-eth`
 
-  // Send as a DAG block or message
- const cid = await db.send({
-    payload,
-    topic?,
-    recipients,
-    service: 'ancon' | 'ipfs' | 'parkydb' | 'swarm',
-    options,
-  })
-  
+// RxJS
+const middleware = {
+  incoming: [concat(SignPolygonTx(), SignAuroraNearTx()), SendTxs()],
+  outgoing: [SignAncon(), PublishAncon()],
+}
+const pubsub = await db.createChannelPubsub(topic, {from, middleware})
 
-   // Send as transaction
- const cid = await db.sendTransaction({
-    payload,
-    topic?,
-    service: 'web3' | 'ethers' | 'filecoin',
-    options,
-  })
-  ```
+// Writes a DAG JSON block
+const id = await db.putBlock({...payload, topic})
 
+
+pubsub.onBlockReply$.subscribe((block)=> {
+
+  // GraphQL
+  const q = await db.query({
+      block,
+      query: `
+      query{
+        block(cid: "${id}") {
+          network
+          key
+        }
+      }   
+      `,
+    })
+})
+```
   
 ### Verifiable Document
 
