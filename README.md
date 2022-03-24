@@ -1,4 +1,6 @@
-# Ancon ParkyDB - A data mesh database using Web 3.0 technology 
+# Ancon ParkyDB 
+
+## A data mesh database using Web 3.0 technology 
 
 >Note: Requires Node v17.7.2 and up for development
 
@@ -179,8 +181,8 @@ const topic = `/anconprotocol/1/marketplace/ipld-dag-eth`
 
 // RxJS
 const middleware = {
-  incoming: [concat(SignPolygonTx(), SignAuroraNearTx()), SendTxs()],
-  outgoing: [SignAncon(), PublishAncon()],
+  incoming: [concat(signPolygonTx(), signAuroraNearTx()), sendTxs()],
+  outgoing: [signAncon(), publishAncon()],
 }
 const pubsub = await db.createChannelPubsub(topic, {from, middleware})
 
