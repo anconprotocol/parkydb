@@ -2,21 +2,20 @@
   "name": "parkydb",
   "version": "0.2.0 ",
   "description": "",
-  "main": "index.js",
+  "main": "lib/index.js",
   "scripts": {
-    "test": "ava --no-worker-threads",
-    "generate": "graphql-codegen"
+    "test": "ava --no-worker-threads"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/anconprotocol/data-agent-library.git"
+    "url": "git+https://github.com/anconprotocol/parkydb.git"
   },
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
-    "url": "https://github.com/anconprotocol/data-agent-library/issues"
+    "url": "https://github.com/anconprotocol/parkydb/issues"
   },
-  "homepage": "https://github.com/anconprotocol/data-agent-library#readme",
+  "homepage": "https://github.com/anconprotocol/parkydb#readme",
   "dependencies": {
     "@graphql-codegen/core": "^2.5.1",
     "@graphql-codegen/typescript": "^2.4.8",
@@ -26,6 +25,11 @@
     "@graphql-tools/utils": "^8.6.3",
     "@ipld/dag-cbor": "^7.0.1",
     "@ipld/dag-json": "^8.0.8",
+    "@jsonforms/core": "^2.5.2",
+    "@jsonforms/material-renderers": "^2.5.2",
+    "@jsonforms/react": "^2.5.2",
+    "@mui/icons-material": "^5.5.1",
+    "@mui/material": "^5.5.2",
     "@multiformats/sha3": "^2.0.8",
     "@noble/ed25519": "^1.6.0",
     "@walmartlabs/json-to-simple-graphql-schema": "^3.0.1",

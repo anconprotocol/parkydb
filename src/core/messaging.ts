@@ -2,13 +2,21 @@ const toJsonSchema = require('to-json-schema')
 const loki = require('lokijs')
 import { Waku, WakuMessage } from 'js-waku'
 import { Block } from 'multiformats/block'
-import { Subject } from 'rxjs'
+import { Observable, OperatorFunction, Subject, tap } from 'rxjs'
 import { BlockValue } from '../interfaces/Blockvalue'
 import { IDataBuilder } from '../interfaces/IBuilder'
 import { IQueryBuilder } from '../interfaces/IQuery'
 
 export interface IMessaging {
   bootstrap(): void
+}
+
+export interface ChannelOptions {
+  from: string
+  middleware: {
+    incoming: Array<(a: Observable<any>) => Observable<unknown>>
+    outgoing: Array<(a: Observable<any>) => Observable<unknown>>
+  }
 }
 
 export class MessagingService implements IMessaging {
@@ -50,6 +58,66 @@ export class MessagingService implements IMessaging {
         const msg = await WakuMessage.fromBytes(block.dag.bytes, topic)
         return this.waku.relay.send(msg)
       },
+      close: () => {
+        if (cancel) cancel.unsubscribe()
+      },
+    }
+  }
+
+  async createChannel(
+    topic: string,
+    options: ChannelOptions,
+    blockPublisher: Subject<BlockValue>,
+  ): Promise<any> {
+    // Topic subscriber observes for DAG blocks (IPLD as bytes)
+    const pubsub = new Subject<any>()
+    this.waku.relay.addObserver(
+      (msg: any) => {
+        if (options.middleware) {
+          pubsub.next(msg)
+        }
+      },
+      [topic],
+    )
+
+    // Topic publisher observes for block publisher and sends these blocks with Waku P2P
+    const cancel = blockPublisher
+      .pipe(
+        tap(),
+        tap(),
+        tap(),
+        tap(),
+        tap(),
+        tap(),
+        tap(),
+        tap(),
+        tap(),
+        tap(),
+        tap(),
+        ...options.middleware.outgoing,
+      )
+      .subscribe(async (block: unknown) => {
+        const msg = await WakuMessage.fromBytes(block as any, topic)
+        await this.waku.relay.send(msg,)
+      })
+
+    return {
+      onBlockReply$: pubsub
+        .asObservable()
+        .pipe(
+          tap(),
+          tap(),
+          tap(),
+          tap(),
+          tap(),
+          tap(),
+          tap(),
+          tap(),
+          tap(),
+          tap(),
+          tap(),
+          ...options.middleware.incoming,
+        ),
       close: () => {
         if (cancel) cancel.unsubscribe()
       },

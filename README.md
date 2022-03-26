@@ -171,7 +171,6 @@ await db.wallet.addNewKeyring('Ed25519', [
 ```
 
 
-## Unreleased
 
 ### Protocols (channels)
 
@@ -206,7 +205,9 @@ pubsub.onBlockReply$.subscribe((block)=> {
     })
 })
 ```
-  
+
+## Unreleased
+
 ### Verifiable Document
 
 ```typescript

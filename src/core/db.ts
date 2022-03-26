@@ -26,6 +26,7 @@ const db: Dexie | any = new Dexie('ancon', {
 })
 
 db.version(1).stores({
+  keyring: `&id`,
   blockdb: `
     &cid,
     topic,
@@ -41,18 +42,21 @@ export class ParkyDB extends WalletController {
   private graphqlService = new GraphqlService()
   private jsonschemaService = new JsonSchemaService()
   private messagingService = new MessagingService()
-  
+
   private hooks = new Hooks()
   private onBlockCreated = new Subject<BlockValue>()
-  
+
   constructor() {
     super()
   }
 
   async initialize(options: any = {}) {
     if (options.withWallet) {
-      this.load()
-      await this.createVault(options.withWallet.password, options.withWallet.seed)
+      await this.load(db)
+      await this.createVault(
+        options.withWallet.password,
+        options.withWallet.seed,
+      )
     }
     await this.messagingService.bootstrap()
     db.blockdb.hook('creating', this.hooks.attachRouter(this.onBlockCreated))
@@ -86,6 +90,14 @@ export class ParkyDB extends WalletController {
   async createTopicPubsub(topic: string) {
     // creates an observable and subscribes to store block creation
     return this.messagingService.createTopic(topic, this.onBlockCreated)
+  }
+
+  async createChannelPubsub(topic: string, options: any) {
+    return this.messagingService.createChannel(
+      topic,
+      options,
+      this.onBlockCreated,
+    )
   }
   async get(key: any, options: any) {
     return db.blockdb.get({ cid: key })
