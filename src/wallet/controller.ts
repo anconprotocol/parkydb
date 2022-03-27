@@ -1,10 +1,10 @@
 import Dexie from 'dexie'
 import { Ed25519 } from './ed25519keyring'
-
+import {IKeyringController} from '../interfaces/IKeyringController'
 const KeyringController = require('eth-keyring-controller')
 const SimpleKeyring = require('eth-simple-keyring')
 
-export class WalletController {
+export class WalletController implements IKeyringController {
   private keyringController: any
   constructor() {}
 

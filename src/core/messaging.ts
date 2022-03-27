@@ -1,18 +1,20 @@
 const toJsonSchema = require('to-json-schema')
 const loki = require('lokijs')
 import { Waku, WakuMessage } from 'js-waku'
-import { Block } from 'multiformats/block'
-import { Observable, OperatorFunction, Subject, tap } from 'rxjs'
+import { Codec } from 'multiformats/bases/base'
+import { BlockCodec, ByteView } from 'multiformats/codecs/interface'
+import { map, Observable, Subject, tap } from 'rxjs'
+import { ChannelCodeEnum } from '../interfaces/BlockCodec'
 import { BlockValue } from '../interfaces/Blockvalue'
-import { IDataBuilder } from '../interfaces/IBuilder'
-import { IQueryBuilder } from '../interfaces/IQuery'
-
+import { ChannelTopic } from '../interfaces/ChannelTopic'
+import { PubsubTopic } from '../interfaces/PubsubTopic'
 export interface IMessaging {
   bootstrap(): void
 }
 
 export interface ChannelOptions {
   from: string
+  blockCodec: BlockCodec<ChannelCodeEnum, ChannelCodeEnum>
   middleware: {
     incoming: Array<(a: Observable<any>) => Observable<unknown>>
     outgoing: Array<(a: Observable<any>) => Observable<unknown>>
@@ -20,7 +22,8 @@ export interface ChannelOptions {
 }
 
 export class MessagingService implements IMessaging {
-  waku: any
+  // @ts-ignore
+  waku: Waku
 
   constructor() {}
 
@@ -31,10 +34,16 @@ export class MessagingService implements IMessaging {
     await this.waku.waitForRemotePeer()
   }
 
+  /**
+   * Creates a pubsub topic. Note topic format must be IPLD dag-json or dag-cbor
+   * @param topic
+   * @param blockPublisher
+   * @returns
+   */
   async createTopic(
     topic: string,
     blockPublisher: Subject<BlockValue>,
-  ): Promise<any> {
+  ): Promise<PubsubTopic> {
     // Topic subscriber observes for DAG blocks (IPLD as bytes)
     const pubsub = new Subject<any>()
     this.waku.relay.addObserver(
@@ -64,11 +73,18 @@ export class MessagingService implements IMessaging {
     }
   }
 
+  /**
+   * Creates a data channel, is similar to a pubsub topic but used for data messaging exchanges
+   * @param topic
+   * @param options
+   * @param blockPublisher
+   * @returns
+   */
   async createChannel(
     topic: string,
     options: ChannelOptions,
     blockPublisher: Subject<BlockValue>,
-  ): Promise<any> {
+  ): Promise<ChannelTopic> {
     // Topic subscriber observes for DAG blocks (IPLD as bytes)
     const pubsub = new Subject<any>()
     this.waku.relay.addObserver(
@@ -96,9 +112,10 @@ export class MessagingService implements IMessaging {
         tap(),
         ...options.middleware.outgoing,
       )
-      .subscribe(async (block: unknown) => {
-        const msg = await WakuMessage.fromBytes(block as any, topic)
-        await this.waku.relay.send(msg,)
+      .subscribe(async (block: any) => {
+        const view = options.blockCodec.encode(block)
+        const msg = await WakuMessage.fromBytes(view, topic)
+        await this.waku.relay.send(msg)
       })
 
     return {
@@ -116,7 +133,9 @@ export class MessagingService implements IMessaging {
           tap(),
           tap(),
           tap(),
-          ...options.middleware.incoming,
+          ...options.middleware.incoming.concat(
+            map((i: Uint8Array) => options.blockCodec.decode(i)),
+          ),
         ),
       close: () => {
         if (cancel) cancel.unsubscribe()
