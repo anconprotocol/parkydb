@@ -180,10 +180,14 @@ const topic = `/anconprotocol/1/marketplace/ipld-dag-eth`
 
 // RxJS
 const middleware = {
-  incoming: [concat(signPolygonTx(), signAuroraNearTx()), sendTxs()],
-  outgoing: [signAncon(), publishAncon()],
+  incoming: [concat(signPolygonTx(), signAuroraNearTx()), ],
+  outgoing: [signAncon(),],
 }
-const pubsub = await db.createChannelPubsub(topic, {from, middleware})
+const blockCodec = {
+  encode: cbor,
+  decode: json,
+}
+const pubsub = await db.createChannelPubsub(topic, {from, blockCodec, middleware})
 
 // Writes a DAG JSON block
 const id = await db.putBlock({...payload, topic})
@@ -206,32 +210,5 @@ pubsub.onBlockReply$.subscribe((block)=> {
 })
 ```
 
-## Unreleased
-
-### Verifiable Document
-
-```typescript
-  // These calls will ask for signature
- const receipt =  await db.makeAndSignAppDocument({
-    cid,
-    topic,
-    recipients,
-    uiServiceHash,
-    options,
-  })
-
- const receipt =  await db.makeAndSignDappDocument({
-    cid,
-    topic,
-    uiServiceHash,
-    options,
-  })
-  
-
-   // Send as transaction
- const cid = await db.deployService({
-    payload,
-    service,
-    options,
-  })
-  ```
+ 
+> Copyright IFESA 2021, 2022

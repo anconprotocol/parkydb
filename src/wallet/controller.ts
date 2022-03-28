@@ -32,3 +32,4 @@ export class WalletController implements IKeyringController {
     await this.keyringController.createNewVaultAndKeychain(password)
   }
 }
+    

@@ -12,7 +12,7 @@ import { DocumentService } from './document'
 import { GraphqlService } from '../query/graphql'
 import { JsonSchemaService } from './jsonschema'
 import { ServiceContext } from '../interfaces/ServiceContext'
-import { MessagingService } from './messaging'
+import { ChannelOptions, MessagingService } from './messaging'
 import { Hooks } from './hooks'
 import { Subject } from 'rxjs'
 import { BlockValue } from '../interfaces/Blockvalue'
@@ -92,7 +92,7 @@ export class ParkyDB extends WalletController {
     return this.messagingService.createTopic(topic, this.onBlockCreated)
   }
 
-  async createChannelPubsub(topic: string, options: any) {
+  async createChannelPubsub(topic: string, options: ChannelOptions) {
     return this.messagingService.createChannel(
       topic,
       options,
