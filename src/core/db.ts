@@ -1,6 +1,10 @@
 const fakeIndexedDB = require('fake-indexeddb')
 const fakeIDBKeyRange = require('fake-indexeddb/lib/FDBKeyRange')
 
+const { Crypto } = require("@peculiar/webcrypto");
+
+const crypto = new Crypto();
+global.crypto = crypto;
 import { CID } from 'blockstore-core/base'
 import Dexie from 'dexie'
 import 'dexie-observable/api'
@@ -17,7 +21,6 @@ import { Hooks } from './hooks'
 import { Subject } from 'rxjs'
 import { BlockValue } from '../interfaces/Blockvalue'
 import { WalletController } from '../wallet/controller'
-const toJsonSchema = require('to-json-schema')
 const { MerkleJson } = require('merkle-json')
 
 const db: Dexie | any = new Dexie('ancon', {
@@ -51,6 +54,8 @@ export class ParkyDB extends WalletController {
   }
 
   async initialize(options: any = {}) {
+    await this.messagingService.bootstrap()
+
     if (options.withWallet) {
       await this.load(db)
       await this.createVault(
@@ -58,11 +63,10 @@ export class ParkyDB extends WalletController {
         options.withWallet.seed,
       )
     }
-    await this.messagingService.bootstrap()
     db.blockdb.hook('creating', this.hooks.attachRouter(this.onBlockCreated))
   }
-  async putBlock(payload: any) {
-    const block = await this.dagService.build(payload)
+  async putBlock(payload: any, options: any = {}) {
+    const block = await this.dagService.build({ ...payload, ...options })
     return this.put(block.cid, block)
   }
   async put(key: CID, value: Block<any>) {
@@ -99,14 +103,32 @@ export class ParkyDB extends WalletController {
       this.onBlockCreated,
     )
   }
-  async get(key: any, options: any) {
+
+  /**
+   * 
+   * @param key 
+   * @param options 
+   * @returns 
+   */
+  async get(key: any, options: any = {}) {
     return db.blockdb.get({ cid: key })
   }
 
+  /**
+   * 
+   * @param options 
+   * @returns 
+   */
   async filter(options: any) {
     const props = db.blockdb.get({ cid: options.key })
     return props
   }
+
+  /**
+   * 
+   * @param options 
+   * @returns 
+   */
   async query(options: any) {
     const ctx = {
       ...options,

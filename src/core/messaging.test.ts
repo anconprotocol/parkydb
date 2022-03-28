@@ -1,10 +1,6 @@
-// https://www.code4copy.com/post/err_ossl_evp_unsupported-on-nodejs-17/ !
 import test from 'ava'
-import { bytes } from 'multiformats'
-const c = require('crypto').webcrypto;
-global.crypto = c
-
-import { ParkyDB } from '../core/db'
+import { ParkyDB } from './db'
+import { MessagingService } from './messaging'
 
 const payload = {
   commitHash: 'xg8pyBr3McqYlUgxAqV0t3s6TRcP+B7MHyPTtyVKMJw=',
@@ -65,10 +61,10 @@ test.beforeEach(async (t) => {
 })
 
 test('add key ring', async (t) => {
-  const { db } = t.context as any
+  const { db }: { db: ParkyDB } = t.context as any
 
   // await db.wallet.submitPassword(`qwerty`)
-  await db.wallet.addEd25519([
+  await db.wallet.addSecp256k1([
     'c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3',
   ])
   // await db.wallet.addNewKeyring('HD Key Tree', [
@@ -76,5 +72,38 @@ test('add key ring', async (t) => {
   // ])
   const accounts = await db.wallet.getAccounts()
 
-  t.is(accounts.length, 2)
+  t.is(accounts.length, 1)
+})
+
+test('create topic', async (t) => {
+  const { db }: { db: ParkyDB } = t.context as any
+  const bob = new MessagingService()
+
+  // await db.wallet.submitPassword(`qwerty`)
+  await db.wallet.addSecp256k1([
+    'c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3',
+  ])
+  // await db.wallet.addNewKeyring('HD Key Tree', [
+  //   'c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3',
+  // ])
+  const accounts = await db.wallet.getAccounts()
+
+  t.is(accounts.length, 1)
+
+  const topic = `/anconprotocol/1/marketplace/ipld-dag-json`
+
+
+  const pubsubAlice = await db.createTopicPubsub(topic)
+
+  // const pubsubBob = await bob.(topic)
+
+  await db.putBlock(payload, { topic })
+  pubsubAlice.onBlockReply$.subscribe(async(block) => {
+    t.is(block, 'from bob')
+  })
+
+  // await bob.putBlock(payload, { topic })
+  // pubsubBob.onBlockReply$.subscribe(async(block) => {
+  //   t.is(block, 'from alice')
+  // })
 })

@@ -1,5 +1,7 @@
-const toJsonSchema = require('to-json-schema')
-const loki = require('lokijs')
+const { Crypto } = require("@peculiar/webcrypto");
+
+const crypto = new Crypto();
+global.crypto = crypto;
 import { Waku, WakuMessage } from 'js-waku'
 import { Codec } from 'multiformats/bases/base'
 import { BlockCodec, ByteView } from 'multiformats/codecs/interface'
@@ -48,7 +50,6 @@ export class MessagingService implements IMessaging {
     const pubsub = new Subject<any>()
     this.waku.relay.addObserver(
       (msg: any) => {
-        // TODO: middleware
         pubsub.next(msg)
       },
       [topic],

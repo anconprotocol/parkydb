@@ -32,6 +32,7 @@
     "@mui/material": "^5.5.2",
     "@multiformats/sha3": "^2.0.8",
     "@noble/ed25519": "^1.6.0",
+    "@peculiar/webcrypto": "^1.3.3",
     "@walmartlabs/json-to-simple-graphql-schema": "^3.0.1",
     "blockstore-core": "^1.0.5",
     "dexie": "^3.2.1",
