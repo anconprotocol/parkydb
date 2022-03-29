@@ -1,5 +1,8 @@
 import test from 'ava'
 import { WakuMessage } from 'js-waku'
+import { ByteView } from 'multiformats/codecs/interface'
+import { map, tap } from 'rxjs'
+import { ChannelCodeEnum } from '../interfaces/BlockCodec'
 import { ParkyDB } from './db'
 import { MessagingService } from './messaging'
 
@@ -91,7 +94,6 @@ test('add key ring', async (t) => {
 test('create topic', async (t) => {
   const { alice, bob }: { alice: ParkyDB; bob: ParkyDB } = t.context as any
 
-  
   await alice.wallet.addSecp256k1([
     'c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3',
   ])
@@ -109,7 +111,7 @@ test('create topic', async (t) => {
 
   const topic = `/anconprotocol/1/marketplace/ipld-dag-json`
   const pubsubAlice = await alice.createTopicPubsub(topic)
-  pubsubAlice.onBlockReply$.subscribe(async(block: WakuMessage) => {  
+  pubsubAlice.onBlockReply$.subscribe(async (block: WakuMessage) => {
     // match topic
     t.is(topic, JSON.parse(block.payloadAsUtf8).topic)
   })
@@ -122,7 +124,60 @@ test('create topic', async (t) => {
 
   // Say hi
   await alice.putBlock(payload, { topic })
+})
 
+test('create channel topic', async (t) => {
+  const { alice, bob }: { alice: ParkyDB; bob: ParkyDB } = t.context as any
 
+  await alice.wallet.addSecp256k1([
+    'c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3',
+  ])
+  // @ts-ignore
+  await alice.wallet.submitPassword(`qwerty`)
+  let accounts = await alice.wallet.getAccounts()
+  t.is(accounts.length, 1)
+  const accountA = accounts[0]
 
+  // @ts-ignore
+  await bob.wallet.submitPassword(`zxcvb`)
+  accounts = await bob.wallet.getAccounts()
+  t.is(accounts.length, 1)
+  const accountB = accounts[0]
+
+  const blockCodec = {
+    name: '',
+    code: ChannelCodeEnum.DagJson,
+    encode: (blob: any) => blob,
+    decode: (blob: any) =>
+      new TextDecoder().decode(JSON.parse(blob.payloadAsUtf8)),
+  }
+  const topic = `/anconprotocol/1/marketplace/ipld-dag-json`
+  const pubsubAlice = await alice.createChannelPubsub(topic, {
+    from: accountA,
+    middleware: {
+      incoming: [tap()],
+      outgoing: [tap()],
+    },
+    blockCodec,
+  })
+  pubsubAlice.onBlockReply$.subscribe(async (block: WakuMessage) => {
+    // match topic
+    t.is(topic, JSON.parse(block.payloadAsUtf8).topic)
+  })
+  const pubsubBob = await bob.createChannelPubsub(topic, {
+    from: accountB,
+    middleware: {
+      incoming: [tap()],
+      outgoing: [tap()],
+    },
+    blockCodec,
+  })
+  pubsubBob.onBlockReply$.subscribe(async (block: WakuMessage) => {
+    // match topic
+    t.is(topic, JSON.parse(block.payloadAsUtf8).topic)
+    await bob.putBlock(payload, { topic })
+  })
+
+  // Say hi
+  await alice.putBlock(payload, { topic })
 })

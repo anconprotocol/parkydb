@@ -5,6 +5,7 @@ import { Simple } from './simple'
 const KeyringController = require('eth-keyring-controller')
 
 interface AccountWallet {
+  exportAccount(from: string): Promise<string>
   getAccounts(): Promise<string>
   addEd25519(keys: string[]): Promise<any>
   addSecp256k1(keys: string[]): Promise<any>

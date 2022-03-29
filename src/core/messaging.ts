@@ -16,7 +16,9 @@ export interface IMessaging {
 
 export interface ChannelOptions {
   from: string
-  blockCodec: BlockCodec<ChannelCodeEnum, ChannelCodeEnum>
+  sigkey?:Uint8Array
+  pubkey?:Uint8Array
+  blockCodec: BlockCodec<ChannelCodeEnum, unknown>
   middleware: {
     incoming: Array<(a: Observable<any>) => Observable<unknown>>
     outgoing: Array<(a: Observable<any>) => Observable<unknown>>
@@ -115,7 +117,10 @@ export class MessagingService implements IMessaging {
       )
       .subscribe(async (block: any) => {
         const view = options.blockCodec.encode(block)
-        const msg = await WakuMessage.fromBytes(view, topic)
+        const msg = await WakuMessage.fromBytes(view, topic, {
+          encPublicKey: options.pubkey,
+          sigPrivKey: options.sigkey,
+        })
         await this.waku.relay.send(msg)
       })
 

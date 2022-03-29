@@ -1,10 +1,10 @@
 const fakeIndexedDB = require('fake-indexeddb')
 const fakeIDBKeyRange = require('fake-indexeddb/lib/FDBKeyRange')
 
-const { Crypto } = require("@peculiar/webcrypto");
+const { Crypto } = require('@peculiar/webcrypto')
 
-const crypto = new Crypto();
-global.crypto = crypto;
+const crypto = new Crypto()
+global.crypto = crypto
 import { CID } from 'blockstore-core/base'
 import Dexie from 'dexie'
 import 'dexie-observable/api'
@@ -20,6 +20,7 @@ import { Hooks } from './hooks'
 import { Subject } from 'rxjs'
 import { BlockValue } from '../interfaces/Blockvalue'
 import { WalletController } from '../wallet/controller'
+import { getPublicKey } from 'js-waku'
 const { MerkleJson } = require('merkle-json')
 
 /**
@@ -33,7 +34,7 @@ export class ParkyDB extends WalletController {
 
   private hooks = new Hooks()
   private onBlockCreated = new Subject<BlockValue>()
-  db: any;
+  db: any
 
   constructor() {
     super()
@@ -42,7 +43,7 @@ export class ParkyDB extends WalletController {
       indexedDB: fakeIndexedDB,
       IDBKeyRange: fakeIDBKeyRange,
     })
-    
+
     db.version(1).stores({
       keyring: `&id`,
       blockdb: `
@@ -51,7 +52,7 @@ export class ParkyDB extends WalletController {
         timestamp`,
     })
 
-    this.db = db;
+    this.db = db
   }
 
   async initialize(options: any = {}) {
@@ -64,7 +65,10 @@ export class ParkyDB extends WalletController {
         options.withWallet.seed,
       )
     }
-    this.db.blockdb.hook('creating', this.hooks.attachRouter(this.onBlockCreated))
+    this.db.blockdb.hook(
+      'creating',
+      this.hooks.attachRouter(this.onBlockCreated),
+    )
   }
   async putBlock(payload: any, options: any = {}) {
     const block = await this.dagService.build({ ...payload, ...options })
@@ -98,27 +102,31 @@ export class ParkyDB extends WalletController {
   }
 
   async createChannelPubsub(topic: string, options: ChannelOptions) {
+    const h = await this.wallet.exportAccount(options.from)
+
+    const sigkey = Buffer.from(h, 'hex')
+    const pubkey = getPublicKey(sigkey)
     return this.messagingService.createChannel(
       topic,
-      options,
+      { ...options, sigkey, pubkey },
       this.onBlockCreated,
     )
   }
 
   /**
-   * 
-   * @param key 
-   * @param options 
-   * @returns 
+   *
+   * @param key
+   * @param options
+   * @returns
    */
   async get(key: any, options: any = {}) {
     return this.db.blockdb.get({ cid: key })
   }
 
   /**
-   * 
-   * @param options 
-   * @returns 
+   *
+   * @param options
+   * @returns
    */
   async filter(options: any) {
     const props = this.db.blockdb.get({ cid: options.key })
@@ -126,9 +134,9 @@ export class ParkyDB extends WalletController {
   }
 
   /**
-   * 
-   * @param options 
-   * @returns 
+   *
+   * @param options
+   * @returns
    */
   async query(options: any) {
     const ctx = {
