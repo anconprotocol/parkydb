@@ -1,4 +1,5 @@
 import test from 'ava'
+import { WakuMessage } from 'js-waku'
 import { ParkyDB } from './db'
 import { MessagingService } from './messaging'
 
@@ -45,8 +46,8 @@ const payload = {
 }
 
 test.beforeEach(async (t) => {
-  const db = new ParkyDB()
-  await db.initialize({
+  const alice = new ParkyDB()
+  await alice.initialize({
     // Remember these values come from a CLI or UI, DO NOT hardcode when implementing
     withWallet: {
       password: 'qwerty',
@@ -55,8 +56,20 @@ test.beforeEach(async (t) => {
     },
   })
 
+  const bob = new ParkyDB()
+  await bob.initialize({
+    // Remember these values come from a CLI or UI, DO NOT hardcode when implementing
+    withWallet: {
+      password: 'zxcvb',
+      seed:
+        'opera offer craft joke defy team prosper tragic reopen street advice moral',
+    },
+  })
+
   t.context = {
-    db,
+    db: alice,
+    alice,
+    bob,
   }
 })
 
@@ -76,34 +89,40 @@ test('add key ring', async (t) => {
 })
 
 test('create topic', async (t) => {
-  const { db }: { db: ParkyDB } = t.context as any
-  const bob = new MessagingService()
+  const { alice, bob }: { alice: ParkyDB; bob: ParkyDB } = t.context as any
 
-  // await db.wallet.submitPassword(`qwerty`)
-  await db.wallet.addSecp256k1([
+  
+  await alice.wallet.addSecp256k1([
     'c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3',
   ])
-  // await db.wallet.addNewKeyring('HD Key Tree', [
-  //   'c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3',
-  // ])
-  const accounts = await db.wallet.getAccounts()
-
+  // @ts-ignore
+  await alice.wallet.submitPassword(`qwerty`)
+  let accounts = await alice.wallet.getAccounts()
   t.is(accounts.length, 1)
+  const accountA = accounts[0]
+
+  // @ts-ignore
+  await bob.wallet.submitPassword(`zxcvb`)
+  accounts = await alice.wallet.getAccounts()
+  t.is(accounts.length, 1)
+  const accountB = accounts[0]
 
   const topic = `/anconprotocol/1/marketplace/ipld-dag-json`
-
-
-  const pubsubAlice = await db.createTopicPubsub(topic)
-
-  // const pubsubBob = await bob.(topic)
-
-  await db.putBlock(payload, { topic })
-  pubsubAlice.onBlockReply$.subscribe(async(block) => {
-    t.is(block, 'from bob')
+  const pubsubAlice = await alice.createTopicPubsub(topic)
+  pubsubAlice.onBlockReply$.subscribe(async(block: WakuMessage) => {  
+    // match topic
+    t.is(topic, JSON.parse(block.payloadAsUtf8).topic)
+  })
+  const pubsubBob = await bob.createTopicPubsub(topic)
+  pubsubBob.onBlockReply$.subscribe(async (block: WakuMessage) => {
+    // match topic
+    t.is(topic, JSON.parse(block.payloadAsUtf8).topic)
+    await bob.putBlock(payload, { topic })
   })
 
-  // await bob.putBlock(payload, { topic })
-  // pubsubBob.onBlockReply$.subscribe(async(block) => {
-  //   t.is(block, 'from alice')
-  // })
+  // Say hi
+  await alice.putBlock(payload, { topic })
+
+
+
 })

@@ -12,7 +12,6 @@ import 'dexie-observable/api'
 import MiniSearch from 'minisearch'
 import { Block } from 'multiformats/block'
 import { DAGJsonService } from './dagjson'
-import { DocumentService } from './document'
 import { GraphqlService } from '../query/graphql'
 import { JsonSchemaService } from './jsonschema'
 import { ServiceContext } from '../interfaces/ServiceContext'
@@ -23,47 +22,49 @@ import { BlockValue } from '../interfaces/Blockvalue'
 import { WalletController } from '../wallet/controller'
 const { MerkleJson } = require('merkle-json')
 
-const db: Dexie | any = new Dexie('ancon', {
-  indexedDB: fakeIndexedDB,
-  IDBKeyRange: fakeIDBKeyRange,
-})
-
-db.version(1).stores({
-  keyring: `&id`,
-  blockdb: `
-    &cid,
-    topic,
-    timestamp`,
-})
-
 /**
  * ParkyDB core class
  */
 export class ParkyDB extends WalletController {
   private dagService = new DAGJsonService()
-  private documentService = new DocumentService()
   private graphqlService = new GraphqlService()
   private jsonschemaService = new JsonSchemaService()
   private messagingService = new MessagingService()
 
   private hooks = new Hooks()
   private onBlockCreated = new Subject<BlockValue>()
+  db: any;
 
   constructor() {
     super()
+
+    const db: Dexie | any = new Dexie('ancon', {
+      indexedDB: fakeIndexedDB,
+      IDBKeyRange: fakeIDBKeyRange,
+    })
+    
+    db.version(1).stores({
+      keyring: `&id`,
+      blockdb: `
+        &cid,
+        topic,
+        timestamp`,
+    })
+
+    this.db = db;
   }
 
   async initialize(options: any = {}) {
     await this.messagingService.bootstrap()
 
     if (options.withWallet) {
-      await this.load(db)
+      await this.load(this.db)
       await this.createVault(
         options.withWallet.password,
         options.withWallet.seed,
       )
     }
-    db.blockdb.hook('creating', this.hooks.attachRouter(this.onBlockCreated))
+    this.db.blockdb.hook('creating', this.hooks.attachRouter(this.onBlockCreated))
   }
   async putBlock(payload: any, options: any = {}) {
     const block = await this.dagService.build({ ...payload, ...options })
@@ -77,7 +78,7 @@ export class ParkyDB extends WalletController {
     })
 
     await miniSearch.addAllAsync([{ id: key.toString(), ...value.value }])
-    return db.blockdb.put({
+    return this.db.blockdb.put({
       cid: key.toString(),
       dag: value,
       document: value.value,
@@ -111,7 +112,7 @@ export class ParkyDB extends WalletController {
    * @returns 
    */
   async get(key: any, options: any = {}) {
-    return db.blockdb.get({ cid: key })
+    return this.db.blockdb.get({ cid: key })
   }
 
   /**
@@ -120,7 +121,7 @@ export class ParkyDB extends WalletController {
    * @returns 
    */
   async filter(options: any) {
-    const props = db.blockdb.get({ cid: options.key })
+    const props = this.db.blockdb.get({ cid: options.key })
     return props
   }
 
@@ -132,7 +133,7 @@ export class ParkyDB extends WalletController {
   async query(options: any) {
     const ctx = {
       ...options,
-      db,
+      db: this.db,
     } as ServiceContext
     return this.graphqlService.query(ctx, null)
   }
