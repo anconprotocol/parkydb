@@ -65,7 +65,7 @@ We using Ava test framework
 
 
 
-## API v0.3.0
+## API v1.0.0-rc.1
 
 ### Store
 
@@ -175,40 +175,59 @@ await db.wallet.addNewKeyring('Ed25519', [
 ### Protocols (channels)
 
 ```typescript
-  // These calls are signed and encrypted
-const topic = `/anconprotocol/1/marketplace/ipld-dag-eth`
+test('create channel topic, signed and encrypted, cbor as message serialization', async (t) => {
+  const { alice, bob }: { alice: ParkyDB; bob: ParkyDB } = t.context as any
 
-// RxJS
-const middleware = {
-  incoming: [concat(signPolygonTx(), signAuroraNearTx()), ],
-  outgoing: [signAncon(),],
-}
-const blockCodec = {
-  encode: cbor,
-  decode: json,
-}
-const pubsub = await db.createChannelPubsub(topic, {from, blockCodec, middleware})
+  await alice.wallet.addSecp256k1([
+    'c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3',
+  ])
+  await alice.wallet.submitPassword(`qwerty`)
+  let accounts = await alice.wallet.getAccounts()
+  t.is(accounts.length, 1)
+  const accountA = accounts[0]
 
-// Writes a DAG JSON block
-const id = await db.putBlock({...payload, topic})
+  await bob.wallet.submitPassword(`zxcvb`)
+  accounts = await bob.wallet.getAccounts()
+  t.is(accounts.length, 1)
+  const accountB = accounts[0]
 
+  const blockCodec = {
+    name: 'cbor',
+    code: '0x71',
+    encode: (obj: any) => encode(obj),
+    decode: (buffer: any) => decode(buffer),
+  }
+  const topic = `/anconprotocol/1/marketplace/cbor`
+  const pubsubAlice = await alice.createChannelPubsub(topic, {
+    from: accountA,
+    middleware: {
+      incoming: [tap()],
+      outgoing: [map((v: BlockValue)=> v.document)],
+    },
+    blockCodec,
+  })
+  pubsubAlice.onBlockReply$.subscribe(async (block: WakuMessage) => {
+    // match topic
+    t.is(topic, JSON.parse(block.payloadAsUtf8).topic)
+  })
+  const pubsubBob = await bob.createChannelPubsub(topic, {
+    from: accountB,
+    middleware: {
+      incoming: [tap()],
+      outgoing: [map((v: BlockValue)=> v.document)],
+    },
+    blockCodec,
+  })
+  pubsubBob.onBlockReply$.subscribe(async (block: WakuMessage) => {
+    // match topic
+    t.is(topic, JSON.parse(block.payloadAsUtf8).topic)
+    await bob.putBlock(payload, { topic })
+  })
 
-pubsub.onBlockReply$.subscribe((block)=> {
-
-  // GraphQL
-  const q = await db.query({
-      block,
-      query: `
-      query{
-        block(cid: "${id}") {
-          network
-          key
-        }
-      }   
-      `,
-    })
+  // Say hi
+  await alice.putBlock(payload, { topic })
 })
 ```
 
  
-> Copyright IFESA 2021, 2022
+> Copyright IFESA  2022

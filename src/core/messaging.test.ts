@@ -1,8 +1,10 @@
+import { decode, encode } from 'cbor-x';
 import test from 'ava'
 import { WakuMessage } from 'js-waku'
 import { ByteView } from 'multiformats/codecs/interface'
 import { map, tap } from 'rxjs'
 import { ChannelCodeEnum } from '../interfaces/BlockCodec'
+import { BlockValue } from '../interfaces/Blockvalue'
 import { ParkyDB } from './db'
 import { MessagingService } from './messaging'
 
@@ -145,18 +147,17 @@ test('create channel topic', async (t) => {
   const accountB = accounts[0]
 
   const blockCodec = {
-    name: '',
-    code: ChannelCodeEnum.DagJson,
-    encode: (blob: any) => blob,
-    decode: (blob: any) =>
-      new TextDecoder().decode(JSON.parse(blob.payloadAsUtf8)),
+    name: 'cbor',
+    code: '0x71',
+    encode: (obj: any) => encode(obj),
+    decode: (buffer: any) => decode(buffer),
   }
-  const topic = `/anconprotocol/1/marketplace/ipld-dag-json`
+  const topic = `/anconprotocol/1/marketplace/cbor`
   const pubsubAlice = await alice.createChannelPubsub(topic, {
     from: accountA,
     middleware: {
       incoming: [tap()],
-      outgoing: [tap()],
+      outgoing: [map((v: BlockValue)=> v.document)],
     },
     blockCodec,
   })
@@ -168,7 +169,7 @@ test('create channel topic', async (t) => {
     from: accountB,
     middleware: {
       incoming: [tap()],
-      outgoing: [tap()],
+      outgoing: [map((v: BlockValue)=> v.document)],
     },
     blockCodec,
   })
