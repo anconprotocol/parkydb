@@ -182,3 +182,129 @@ test('create channel topic', async (t) => {
   // Say hi
   await alice.putBlock(payload, { topic })
 })
+
+// test('find multichain tX by sender', async (t) => {
+//   const { alice, bob, charlie }: { alice: ParkyDB; bob: ParkyDB, charlie: ParkyDB } = t.context as any
+
+//   await alice.wallet.submitPassword(`qwerty`)
+//   let accounts = await alice.wallet.getAccounts()
+//   const accountA = accounts[0]
+
+//   await bob.wallet.submitPassword(`zxcvb`)
+//   accounts = await bob.wallet.getAccounts()
+//   const accountB = accounts[0]
+
+//  await charlie.wallet.submitPassword(`zxcvb`)
+//   accounts = await charlie.wallet.getAccounts()
+//   const accountC = accounts[0]
+
+//   const blockCodec = {
+//     name: 'eth-block',
+//     code: '0x90',
+//     encode: (obj: any) => encodeDagEth(obj),
+//     decode: (buffer: any) => decodeDagEth(buffer),
+//   }
+
+//   const topicBSC = `/bsc/1/new_blocks/dageth`
+//   const topicEthereum = `/ethereum/1/new_blocks/dageth`
+//   const topicPolygon = `/polygon/1/new_blocks/dageth`
+  
+
+//   // Aggregate from BSC, Ethereum and Polygon any Transfer to x address
+//   // Then pipe calls to Discord channel and an arbitrage bot using a webhook (POST)
+//   const pubsubAlice = await alice.createChannelPubsub(topicBSC, {
+//     from: accountA,
+//     middleware: {
+//       incoming: [
+//         tap() 
+//       ],
+//       outgoing: [
+//         tap()
+//       ],
+//     },
+//     blockCodec,
+//   })
+//   const pubsubBob = await bob.createChannelPubsub(topicEthereum, {
+//     from: accountB,
+//     middleware: {
+//       incoming: [
+//         tap() 
+//       ],
+//       outgoing: [
+//         tap()
+//       ],
+//     },
+//     blockCodec,
+//   })
+//   const pubsubCharlie = await charlie.createChannelPubsub(topicPolygon, {
+//     from: accountC,
+//     middleware: {
+//       incoming: [
+//         tap() 
+//       ],
+//       outgoing: [
+//         tap()
+//       ],
+//     },
+//     blockCodec,
+//   })
+
+//   const aggregator = await charlie.createChannelPubsub(topicPolygon, {
+//     from: accountC,
+//     middleware: {
+//       incoming: [
+//         filter((v: object)=> (v.address === '0x...' && v.event === 'Transfer')),
+//         reduce((v, init) => v = new BigNumber(init).add(v)), 
+//       ],
+//       outgoing: [
+//         map((v: BlockValue)=> toDagEth(v.document))
+//       ],
+//     },
+//     blockCodec,
+//   })
+
+//   pubsubAlice.onBlockReply$.subscribe(async (block: WakuMessage) => {
+//     // match topic
+//     t.is(topic, JSON.parse(block.payloadAsUtf8).topic)
+//   })
+//   const pubsubBob = await bob.createChannelPubsub(topic, {
+//     from: accountB,
+//     middleware: {
+//       incoming: [tap()],
+//       outgoing: [map((v: BlockValue)=> v.document)],
+//     },
+//     blockCodec,
+//   })
+//   pubsubBob.onBlockReply$.subscribe(async (block: WakuMessage) => {
+//     // match topic
+//     t.is(topic, JSON.parse(block.payloadAsUtf8).topic)
+//     await bob.putBlock(payload, { topic })
+//   })
+
+//   subscribeNewBlocks([
+//   {
+//     name: 'bsc',
+//     chainId: '56',
+//     rpc: 'wss://somerpc.server',
+//   },
+//    ], (payload: any) => {
+//     await alice.putBlock(payload, { topic })
+//   })
+  
+//   subscribeNewBlocks([{
+//     name: 'mainnet',
+//     chainId: '1',
+//     rpc: 'wss://somerpc.server',
+//   },
+//   ], (payload: any) => {
+//     await alice.putBlock(payload, { topic })
+//   })
+//   subscribeNewBlocks([ {
+//     name: 'polygon',
+//     chainId: '137',
+//     rpc: 'wss://somerpc.server',
+//   },
+//   ], (payload: any) => {
+//     await alice.putBlock(payload, { topic })
+//   })
+// })

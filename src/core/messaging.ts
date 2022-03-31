@@ -138,14 +138,57 @@ export class MessagingService implements IMessaging {
           tap(),
           tap(),
           tap(),
-          tap(),
-          tap(),
-          ...options.middleware.incoming.concat(
-            map((i: Uint8Array) => options.blockCodec.decode(i)),
-          ),
+          map(options.blockCodec.decode),
+          ...options.middleware.incoming,
         ),
       close: () => {
         if (cancel) cancel.unsubscribe()
+      },
+    }
+  }
+
+
+  /**
+   * Aggregates multiple topics
+   * @param topics
+   * @param options
+   * @param blockPublisher
+   * @returns
+   */
+  async aggregate(
+    topics: string[],
+    options: ChannelOptions,
+  ): Promise<ChannelTopic> {
+    // Topic subscriber observes for DAG blocks (IPLD as bytes)
+    const pubsub = new Subject<any>()
+    this.waku.relay.addObserver(
+      (msg: any) => {
+        if (options.middleware) {
+          pubsub.next(msg)
+        }
+      },
+      topics,
+    )
+
+    return {
+      onBlockReply$: pubsub
+        .asObservable()
+        .pipe(
+          tap(),
+          tap(),
+          tap(),
+          tap(),
+          tap(),
+          tap(),
+          tap(),
+          tap(),
+          tap(),
+          tap(),
+          map(options.blockCodec.decode),
+          ...options.middleware.incoming,
+        ),
+      close: () => {
+        // no op
       },
     }
   }
