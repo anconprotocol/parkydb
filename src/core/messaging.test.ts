@@ -1,4 +1,4 @@
-import { decode, encode } from 'cbor-x';
+import { decode, encode } from 'cbor-x'
 import test from 'ava'
 import { WakuMessage } from 'js-waku'
 import { ByteView } from 'multiformats/codecs/interface'
@@ -157,7 +157,7 @@ test('create channel topic', async (t) => {
     from: accountA,
     middleware: {
       incoming: [tap()],
-      outgoing: [map((v: BlockValue)=> v.document)],
+      outgoing: [map((v: BlockValue) => v.document)],
     },
     blockCodec,
   })
@@ -169,7 +169,7 @@ test('create channel topic', async (t) => {
     from: accountB,
     middleware: {
       incoming: [tap()],
-      outgoing: [map((v: BlockValue)=> v.document)],
+      outgoing: [map((v: BlockValue) => v.document)],
     },
     blockCodec,
   })
@@ -183,8 +183,18 @@ test('create channel topic', async (t) => {
   await alice.putBlock(payload, { topic })
 })
 
-// test('find multichain tX by sender', async (t) => {
-//   const { alice, bob, charlie }: { alice: ParkyDB; bob: ParkyDB, charlie: ParkyDB } = t.context as any
+// test('find multichain tx by sender', async (t) => {
+//   const {
+//     alice,
+//     bob,
+//     charlie,
+//     consumer,
+//   }: {
+//     alice: ParkyDB
+//     bob: ParkyDB
+//     charlie: ParkyDB
+//     consumer: ParkyDB
+//   } = t.context as any
 
 //   await alice.wallet.submitPassword(`qwerty`)
 //   let accounts = await alice.wallet.getAccounts()
@@ -194,9 +204,13 @@ test('create channel topic', async (t) => {
 //   accounts = await bob.wallet.getAccounts()
 //   const accountB = accounts[0]
 
-//  await charlie.wallet.submitPassword(`zxcvb`)
+//   await charlie.wallet.submitPassword(`a1d2f3f4`)
 //   accounts = await charlie.wallet.getAccounts()
 //   const accountC = accounts[0]
+
+//   await consumer.wallet.submitPassword(`mknjbhvgv`)
+//   accounts = await consumer.wallet.getAccounts()
+//   const accountConsumer = accounts[0]
 
 //   const blockCodec = {
 //     name: 'eth-block',
@@ -208,103 +222,89 @@ test('create channel topic', async (t) => {
 //   const topicBSC = `/bsc/1/new_blocks/dageth`
 //   const topicEthereum = `/ethereum/1/new_blocks/dageth`
 //   const topicPolygon = `/polygon/1/new_blocks/dageth`
-  
 
 //   // Aggregate from BSC, Ethereum and Polygon any Transfer to x address
 //   // Then pipe calls to Discord channel and an arbitrage bot using a webhook (POST)
 //   const pubsubAlice = await alice.createChannelPubsub(topicBSC, {
 //     from: accountA,
 //     middleware: {
-//       incoming: [
-//         tap() 
-//       ],
-//       outgoing: [
-//         tap()
-//       ],
+//       incoming: [tap()],
+//       outgoing: [tap()],
 //     },
 //     blockCodec,
 //   })
 //   const pubsubBob = await bob.createChannelPubsub(topicEthereum, {
 //     from: accountB,
 //     middleware: {
-//       incoming: [
-//         tap() 
-//       ],
-//       outgoing: [
-//         tap()
-//       ],
+//       incoming: [tap()],
+//       outgoing: [tap()],
 //     },
 //     blockCodec,
 //   })
 //   const pubsubCharlie = await charlie.createChannelPubsub(topicPolygon, {
 //     from: accountC,
 //     middleware: {
-//       incoming: [
-//         tap() 
-//       ],
-//       outgoing: [
-//         tap()
-//       ],
-//     },
-//     blockCodec,
-//   })
-
-//   const aggregator = await charlie.createChannelPubsub(topicPolygon, {
-//     from: accountC,
-//     middleware: {
-//       incoming: [
-//         filter((v: object)=> (v.address === '0x...' && v.event === 'Transfer')),
-//         reduce((v, init) => v = new BigNumber(init).add(v)), 
-//       ],
-//       outgoing: [
-//         map((v: BlockValue)=> toDagEth(v.document))
-//       ],
-//     },
-//     blockCodec,
-//   })
-
-//   pubsubAlice.onBlockReply$.subscribe(async (block: WakuMessage) => {
-//     // match topic
-//     t.is(topic, JSON.parse(block.payloadAsUtf8).topic)
-//   })
-//   const pubsubBob = await bob.createChannelPubsub(topic, {
-//     from: accountB,
-//     middleware: {
 //       incoming: [tap()],
-//       outgoing: [map((v: BlockValue)=> v.document)],
+//       outgoing: [tap()],
 //     },
 //     blockCodec,
 //   })
-//   pubsubBob.onBlockReply$.subscribe(async (block: WakuMessage) => {
+
+//   subscribeNewBlocks(
+//     [
+//       {
+//         name: 'bsc',
+//         chainId: '56',
+//         rpc: 'wss://somerpc.server',
+//       },
+//     ],
+//     (payload: any) => {
+//       await alice.putBlock(payload, { topic })
+//     },
+//   )
+
+//   subscribeNewBlocks(
+//     [
+//       {
+//         name: 'mainnet',
+//         chainId: '1',
+//         rpc: 'wss://somerpc.server',
+//       },
+//     ],
+//     (payload: any) => {
+//       await alice.putBlock(payload, { topic })
+//     },
+//   )
+//   subscribeNewBlocks(
+//     [
+//       {
+//         name: 'polygon',
+//         chainId: '137',
+//         rpc: 'wss://somerpc.server',
+//       },
+//     ],
+//     (payload: any) => {
+//       await alice.putBlock(payload, { topic })
+//     },
+//   )
+//   const aggregator = await consumer.aggregate(
+//     [topicBSC, topicEthereum, topicPolygon],
+//     {
+//       from: accountConsumer,
+//       middleware: {
+//         incoming: [
+//           filter(
+//             (v: object) => v.address === '0x...' && v.event === 'Transfer',
+//           ),
+//           reduce((v, init) => (v = new BigNumber(init).add(v))),
+//         ],
+//       },
+//       blockCodec,
+//     },
+//   )
+
+//   aggregator.onBlockReply$.subscribe(async (block: WakuMessage) => {
 //     // match topic
 //     t.is(topic, JSON.parse(block.payloadAsUtf8).topic)
-//     await bob.putBlock(payload, { topic })
-//   })
-
-//   subscribeNewBlocks([
-//   {
-//     name: 'bsc',
-//     chainId: '56',
-//     rpc: 'wss://somerpc.server',
-//   },
-//    ], (payload: any) => {
-//     await alice.putBlock(payload, { topic })
-//   })
-  
-//   subscribeNewBlocks([{
-//     name: 'mainnet',
-//     chainId: '1',
-//     rpc: 'wss://somerpc.server',
-//   },
-//   ], (payload: any) => {
-//     await alice.putBlock(payload, { topic })
-//   })
-//   subscribeNewBlocks([ {
-//     name: 'polygon',
-//     chainId: '137',
-//     rpc: 'wss://somerpc.server',
-//   },
-//   ], (payload: any) => {
-//     await alice.putBlock(payload, { topic })
 //   })
 // })
