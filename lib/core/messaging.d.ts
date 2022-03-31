@@ -24,4 +24,5 @@ export declare class MessagingService implements IMessaging {
     bootstrap(): Promise<void>;
     createTopic(topic: string, blockPublisher: Subject<BlockValue>): Promise<PubsubTopic>;
     createChannel(topic: string, options: ChannelOptions, blockPublisher: Subject<BlockValue>): Promise<ChannelTopic>;
+    aggregate(topics: string[], options: ChannelOptions): Promise<ChannelTopic>;
 }
