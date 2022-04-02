@@ -1,4 +1,4 @@
-import { Waku } from 'js-waku';
+import { Waku } from 'js-waku/build/main';
 import { BlockCodec } from 'multiformats/codecs/interface';
 import { Observable, Subject } from 'rxjs';
 import { BlockValue } from '../interfaces/Blockvalue';
