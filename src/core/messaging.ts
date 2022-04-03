@@ -1,4 +1,5 @@
 const { Crypto } = require('@peculiar/webcrypto')
+window = window || {}
 
 const crypto = new Crypto()
 if (!window.crypto) {

@@ -3,6 +3,8 @@ const fakeIDBKeyRange = require('fake-indexeddb/lib/FDBKeyRange')
 
 const { Crypto } = require('@peculiar/webcrypto')
 const crypto = new Crypto()
+
+window = window || {}
 if (!window.crypto) {
   global.crypto = crypto
 }
@@ -40,10 +42,15 @@ export class ParkyDB extends WalletController {
   constructor() {
     super()
 
-    const db: Dexie | any = new Dexie('ancon', {
-      indexedDB: fakeIndexedDB,
-      IDBKeyRange: fakeIDBKeyRange,
-    })
+    const db: Dexie | any = new Dexie(
+      'ancon',
+      window.crypto
+        ? {}
+        : {
+            indexedDB: fakeIndexedDB,
+            IDBKeyRange: fakeIDBKeyRange,
+          },
+    )
 
     db.version(1).stores({
       keyring: `&id`,
