@@ -20,7 +20,7 @@ import { Hooks } from './hooks'
 import { Subject } from 'rxjs'
 import { BlockValue } from '../interfaces/Blockvalue'
 import { WalletController } from '../wallet/controller'
-import { getPublicKey } from 'js-waku/build/main'
+import { getPublicKey } from 'js-waku'
 const { MerkleJson } = require('merkle-json')
 
 /**

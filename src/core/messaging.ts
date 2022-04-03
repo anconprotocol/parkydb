@@ -2,7 +2,7 @@ const { Crypto } = require("@peculiar/webcrypto");
 
 const crypto = new Crypto();
 global.crypto = crypto;
-import { Waku, WakuMessage } from 'js-waku/build/main'
+import { Waku, WakuMessage } from 'js-waku'
 import { Codec } from 'multiformats/bases/base'
 import { BlockCodec, ByteView } from 'multiformats/codecs/interface'
 import { map, Observable, Subject, tap } from 'rxjs'
