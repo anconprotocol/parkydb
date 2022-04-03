@@ -93,15 +93,14 @@ export class ParkyDB extends WalletController {
     return this.db.blockdb.put({
       cid: key.toString(),
       dag: value,
-      document: value.value,
+      document: (value.value),
       schemas: {
-        jsonschema: jsch,
-        graphqls: await this.graphqlService.build(value.value),
+        jsonschema: (jsch),
       },
       hashtag: mj.hash(value.value),
       index: JSON.stringify(miniSearch),
       timestamp: new Date().getTime(),
-    }, key.toString())
+    })
   }
 
   async createTopicPubsub(topic: string) {

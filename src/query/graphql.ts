@@ -18,7 +18,9 @@ export class GraphqlService implements IDataBuilder, IQueryBuilder {
   async query(ctx: ServiceContext, options: any = {}): Promise<any> {
     // @ts-ignore
     const item = await ctx.db.blockdb.get({ cid: ctx.cid })
-    let schema = new GraphQLSchema(item.schemas.graphqls)
+
+    const config = await this.build(item.document)
+    let schema = new GraphQLSchema(config)
 
     if (options && options.customTypeDefinitions && options.customResolvers) {
       schema = makeExecutableSchema({
@@ -54,7 +56,7 @@ export class GraphqlService implements IDataBuilder, IQueryBuilder {
       },
     })
 
-    return schemaComposer.buildSchema().toConfig()
+    return (schemaComposer.buildSchema().toConfig())
   }
   async build(value: object) {
     const typedValue = composeWithJson('Block', value)
