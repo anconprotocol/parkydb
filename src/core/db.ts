@@ -3,9 +3,8 @@ const fakeIDBKeyRange = require('fake-indexeddb/lib/FDBKeyRange')
 
 const { Crypto } = require('@peculiar/webcrypto')
 const crypto = new Crypto()
-
-window = window || {}
-if (!window.crypto) {
+// @ts-ignore
+if (!global.window) {
   global.crypto = crypto
 }
 import { CID } from 'blockstore-core/base'
@@ -44,7 +43,7 @@ export class ParkyDB extends WalletController {
 
     const db: Dexie | any = new Dexie(
       'ancon',
-      window.crypto
+      global.window
         ? {}
         : {
             indexedDB: fakeIndexedDB,
@@ -63,8 +62,8 @@ export class ParkyDB extends WalletController {
     this.db = db
   }
 
-  async initialize(options: any = {}) {
-    await this.messagingService.bootstrap({ ...options.wakuconnect })
+  async initialize(options: any = { wakuconnect: null }) {
+    await this.messagingService.bootstrap(options.wakuconnect)
 
     if (options.withWallet) {
       await this.load(this.db)

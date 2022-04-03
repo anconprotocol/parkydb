@@ -1,8 +1,8 @@
 const { Crypto } = require('@peculiar/webcrypto')
-window = window || {}
 
 const crypto = new Crypto()
-if (!window.crypto) {
+// @ts-ignore
+if (!global.window) {
   global.crypto = crypto
 }
 import { Waku, WakuMessage } from 'js-waku'
