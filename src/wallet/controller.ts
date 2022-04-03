@@ -24,7 +24,7 @@ export class WalletController implements IKeyringController {
       initState: kr.keyring || {},
     })
     this.keyringController.store.subscribe(async (state: any) => {
-      await vaultStorage.keyring.put({ id: 1, keyring: state })
+      await vaultStorage.keyring.put({ id: 1, keyring: state }, 1)
     })
   }
 
