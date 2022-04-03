@@ -50,7 +50,7 @@
     "graphql-helix": "^1.12.0",
     "graphql-tag": "^2.12.6",
     "indexeddbshim": "^2.2.1",
-    "js-waku": "^0.19.2",
+    "js-waku": "^0.20.0",
     "jsonschema-protobuf": "^1.0.2",
     "lokijs": "^1.5.12",
     "merkle-json": "^2.0.0",
