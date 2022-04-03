@@ -1,4 +1,4 @@
-const { Crypto } = require("@peculiar/webcrypto");
+const { Crypto } = require('@peculiar/webcrypto')
 
 const crypto = new Crypto()
 if (!window.crypto) {
@@ -13,13 +13,13 @@ import { BlockValue } from '../interfaces/Blockvalue'
 import { ChannelTopic } from '../interfaces/ChannelTopic'
 import { PubsubTopic } from '../interfaces/PubsubTopic'
 export interface IMessaging {
-  bootstrap(): void
+  bootstrap(options: any): void
 }
 
 export interface ChannelOptions {
   from: string
-  sigkey?:Uint8Array
-  pubkey?:Uint8Array
+  sigkey?: Uint8Array
+  pubkey?: Uint8Array
   blockCodec: BlockCodec<any, unknown>
   middleware: {
     incoming: Array<(a: Observable<any>) => Observable<unknown>>
@@ -35,8 +35,9 @@ export class MessagingService implements IMessaging {
 
   async load(key: any, data: any): Promise<any> {}
 
-  async bootstrap() {
-    this.waku = await Waku.create({ bootstrap: { default: true } })
+  async bootstrap(options: any) {
+    const config = options || { bootstrap: { default: true } }
+    this.waku = await Waku.create(config)
     await this.waku.waitForRemotePeer()
   }
 
@@ -149,7 +150,6 @@ export class MessagingService implements IMessaging {
     }
   }
 
-
   /**
    * Aggregates multiple topics
    * @param topics
@@ -163,14 +163,11 @@ export class MessagingService implements IMessaging {
   ): Promise<ChannelTopic> {
     // Topic subscriber observes for DAG blocks (IPLD as bytes)
     const pubsub = new Subject<any>()
-    this.waku.relay.addObserver(
-      (msg: any) => {
-        if (options.middleware) {
-          pubsub.next(msg)
-        }
-      },
-      topics,
-    )
+    this.waku.relay.addObserver((msg: any) => {
+      if (options.middleware) {
+        pubsub.next(msg)
+      }
+    }, topics)
 
     return {
       onBlockReply$: pubsub

@@ -5,7 +5,7 @@ import { BlockValue } from '../interfaces/Blockvalue';
 import { ChannelTopic } from '../interfaces/ChannelTopic';
 import { PubsubTopic } from '../interfaces/PubsubTopic';
 export interface IMessaging {
-    bootstrap(): void;
+    bootstrap(options: any): void;
 }
 export interface ChannelOptions {
     from: string;
@@ -21,7 +21,7 @@ export declare class MessagingService implements IMessaging {
     waku: Waku;
     constructor();
     load(key: any, data: any): Promise<any>;
-    bootstrap(): Promise<void>;
+    bootstrap(options: any): Promise<void>;
     createTopic(topic: string, blockPublisher: Subject<BlockValue>): Promise<PubsubTopic>;
     createChannel(topic: string, options: ChannelOptions, blockPublisher: Subject<BlockValue>): Promise<ChannelTopic>;
     aggregate(topics: string[], options: ChannelOptions): Promise<ChannelTopic>;

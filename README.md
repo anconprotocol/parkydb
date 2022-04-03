@@ -104,7 +104,16 @@ import { ParkyDB } from 'parkydb'
 
 // Instantiate new DB instance
 const db = new ParkyDB()
-await db.initialize()
+const peer =
+    '/ip4/0.0.0.0/tcp/60000/p2p/...'
+  await this.bob.initialize({
+    wakuconnect: { bootstrap: { peers: [peer] } },
+    // Remember these values come from a CLI or UI, DO NOT hardcode when implementing
+    withWallet: {
+      password: 'zxcvb',
+      seed: 'opera offer craft joke defy team prosper tragic reopen street advice moral',
+    },
+  })
 const topic = `/anconprotocol/1/marketplace/ipld-dag-json`
 
 // Writes a DAG JSON block

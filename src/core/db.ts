@@ -57,7 +57,7 @@ export class ParkyDB extends WalletController {
   }
 
   async initialize(options: any = {}) {
-    await this.messagingService.bootstrap()
+    await this.messagingService.bootstrap({ ...options.wakuconnect })
 
     if (options.withWallet) {
       await this.load(this.db)
