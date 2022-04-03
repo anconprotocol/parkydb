@@ -43,8 +43,8 @@ export class WalletController implements IKeyringController {
 
   async createVault(password: string, seed?: string) {
     if (seed) {
-      await this.keyringController.createNewVaultAndRestore(password, seed)
+      return this.keyringController.createNewVaultAndRestore(password, seed)
     }
-    await this.keyringController.createNewVaultAndKeychain(password)
+    return this.keyringController.createNewVaultAndKeychain(password)
   }
 }

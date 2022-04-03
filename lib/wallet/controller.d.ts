@@ -11,6 +11,6 @@ export declare class WalletController implements IKeyringController {
     constructor();
     load(vaultStorage: Dexie | any): Promise<void>;
     get wallet(): AccountWallet;
-    createVault(password: string, seed?: string): Promise<void>;
+    createVault(password: string, seed?: string): Promise<any>;
 }
 export {};

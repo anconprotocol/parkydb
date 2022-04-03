@@ -39,7 +39,7 @@ export class MessagingService implements IMessaging {
   async bootstrap(options: any) {
     const config = options || { bootstrap: { default: true } }
     this.waku = await Waku.create(config)
-    return true // this.waku.waitForRemotePeer()
+    return true // ppthis.waku.waitForRemotePeer()
   }
 
   /**

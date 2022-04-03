@@ -101,7 +101,7 @@ export class ParkyDB extends WalletController {
       hashtag: mj.hash(value.value),
       index: JSON.stringify(miniSearch),
       timestamp: new Date().getTime(),
-    })
+    }, key.toString())
   }
 
   async createTopicPubsub(topic: string) {
