@@ -23,7 +23,7 @@ export interface ChannelOptions {
   pubkey?: Uint8Array
   blockCodec: BlockCodec<any, unknown>
   middleware: {
-    incoming: Array<(a: Observable<any>) => Observable<unknown>>
+    incoming: Array<(a: Observable<any>) => Observable<unknown>>  
     outgoing: Array<(a: Observable<any>) => Observable<unknown>>
   }
 }
@@ -39,7 +39,7 @@ export class MessagingService implements IMessaging {
   async bootstrap(options: any) {
     const config = options || { bootstrap: { default: true } }
     this.waku = await Waku.create(config)
-    await this.waku.waitForRemotePeer()
+    return this.waku.waitForRemotePeer()
   }
 
   /**

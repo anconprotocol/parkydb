@@ -63,7 +63,6 @@ export class ParkyDB extends WalletController {
   }
 
   async initialize(options: any = { wakuconnect: null }) {
-    await this.messagingService.bootstrap(options.wakuconnect)
 
     if (options.withWallet) {
       await this.load(this.db)
@@ -76,6 +75,8 @@ export class ParkyDB extends WalletController {
       'creating',
       this.hooks.attachRouter(this.onBlockCreated),
     )
+    return this.messagingService.bootstrap(options.wakuconnect)
+
   }
   async putBlock(payload: any, options: any = {}) {
     const block = await this.dagService.build({ ...payload, ...options })
