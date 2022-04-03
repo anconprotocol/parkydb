@@ -141,10 +141,10 @@ test('create channel topic', async (t) => {
   const accountA = accounts[0]
 
   // @ts-ignore
-  await bob.wallet.submitPassword(`zxcvb`)
-  accounts = await bob.wallet.getAccounts()
-  t.is(accounts.length, 1)
-  const accountB = accounts[0]
+    await bob.wallet.submitPassword(`zxcvb`)
+    accounts = await bob.wallet.getAccounts()
+    t.is(accounts.length, 1)
+    const accountB = accounts[0]
 
   const blockCodec = {
     name: 'cbor',
