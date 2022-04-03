@@ -21,7 +21,7 @@ export declare class MessagingService implements IMessaging {
     waku: Waku;
     constructor();
     load(key: any, data: any): Promise<any>;
-    bootstrap(options: any): Promise<void>;
+    bootstrap(options: any): Promise<boolean>;
     createTopic(topic: string, blockPublisher: Subject<BlockValue>): Promise<PubsubTopic>;
     createChannel(topic: string, options: ChannelOptions, blockPublisher: Subject<BlockValue>): Promise<ChannelTopic>;
     aggregate(topics: string[], options: ChannelOptions): Promise<ChannelTopic>;

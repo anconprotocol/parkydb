@@ -12,7 +12,7 @@ export declare class ParkyDB extends WalletController {
     private onBlockCreated;
     db: any;
     constructor();
-    initialize(options?: any): Promise<void>;
+    initialize(options?: any): Promise<boolean>;
     putBlock(payload: any, options?: any): Promise<any>;
     put(key: CID, value: Block<any>): Promise<any>;
     createTopicPubsub(topic: string): Promise<import("../interfaces/PubsubTopic").PubsubTopic>;
