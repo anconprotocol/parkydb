@@ -2,9 +2,10 @@ const fakeIndexedDB = require('fake-indexeddb')
 const fakeIDBKeyRange = require('fake-indexeddb/lib/FDBKeyRange')
 
 const { Crypto } = require('@peculiar/webcrypto')
-
 const crypto = new Crypto()
-global.crypto = crypto
+if (!window.crypto) {
+  global.crypto = crypto
+}
 import { CID } from 'blockstore-core/base'
 import Dexie from 'dexie'
 import 'dexie-observable/api'

@@ -1,7 +1,9 @@
 const { Crypto } = require("@peculiar/webcrypto");
 
-const crypto = new Crypto();
-global.crypto = crypto;
+const crypto = new Crypto()
+if (!window.crypto) {
+  global.crypto = crypto
+}
 import { Waku, WakuMessage } from 'js-waku'
 import { Codec } from 'multiformats/bases/base'
 import { BlockCodec, ByteView } from 'multiformats/codecs/interface'
