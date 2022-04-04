@@ -65,7 +65,7 @@ We using Ava test framework
 
 
 
-## API v1.0.0-rc.1
+## API v1.0.0-rc.3
 
 ### Store
 
