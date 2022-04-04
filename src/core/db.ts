@@ -84,9 +84,15 @@ export class ParkyDB extends WalletController {
     )
     return this.messagingService.bootstrap(options.wakuconnect)
   }
+  
   async putBlock(payload: any, options: any = {}) {
     const block = await this.dagService.build({ ...payload, ...options })
-    return this.put(block.cid, block)
+    const has = await this.get(block.cid.toString(), null)
+    if (!!has) {
+        return has;
+    } else {
+        return this.put(block.cid, block);
+    }
   }
   async put(key: CID, value: Block<any>) {
     const jsch = await this.jsonschemaService.build(value.value)
