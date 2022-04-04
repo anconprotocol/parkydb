@@ -61,6 +61,10 @@ test('put', async (t) => {
   const { db } = t.context as any
   const id = await db.putBlock(payload)
   const res = await db.get(id, null)
+
+  // db.queryDb((blocks)=>{
+  //   return () => blocks.where({ cid: '' })
+  // });
   const q = await db.query({
     cid: id,
     query: `

@@ -81,6 +81,10 @@ const id = await db.putBlock(payload)
 
 // Fetch an existing DAG block
 const res = await db.get(id)
+// Queries using Dexie
+const obs$ = await db.queryBlocks((blocks) => {
+    return () => blocks.where({ cid: '' })
+});
 
 // Queries with GraphQL a JSON snapshot of the DAG block
 const q = await db.query({

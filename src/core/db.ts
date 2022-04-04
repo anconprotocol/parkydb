@@ -8,7 +8,7 @@ if (!global.window) {
   global.crypto = crypto
 }
 import { CID } from 'blockstore-core/base'
-import Dexie from 'dexie'
+import Dexie, { liveQuery, Table } from 'dexie'
 import 'dexie-observable/api'
 
 import MiniSearch from 'minisearch'
@@ -84,14 +84,16 @@ export class ParkyDB extends WalletController {
     )
     return this.messagingService.bootstrap(options.wakuconnect)
   }
-  
+
   async putBlock(payload: any, options: any = {}) {
     const block = await this.dagService.build({ ...payload, ...options })
     const has = await this.get(block.cid.toString(), null)
     if (!!has) {
-        return has;
+      return { id: block.cid.toString(), model: has }
     } else {
-        return this.put(block.cid, block);
+      await this.put(block.cid, block)
+
+      return { id: block.cid.toString() }
     }
   }
   async put(key: CID, value: Block<any>) {
@@ -147,9 +149,8 @@ export class ParkyDB extends WalletController {
    * @param options
    * @returns
    */
-  async filter(options: any) {
-    const props = this.db.blockdb.get({ cid: options.key })
-    return props
+  async queryBlocks$(fn: (blocks: Table) => () => unknown) {
+    return liveQuery(fn(this.db.blockdb))
   }
 
   /**
