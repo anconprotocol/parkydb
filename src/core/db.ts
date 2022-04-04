@@ -56,6 +56,7 @@ export class ParkyDB extends WalletController {
       blockdb: `
         &cid,
         topic,
+        kind,
         timestamp`,
     })
 
