@@ -32,11 +32,11 @@ export class ParkyDB extends WalletController {
   private dagService = new DAGJsonService()
   private graphqlService = new GraphqlService()
   private jsonschemaService = new JsonSchemaService()
-  private messagingService = new MessagingService()
 
   private hooks = new Hooks()
   private onBlockCreated = new Subject<BlockValue>()
   db: any
+  private messagingService: MessagingService
 
   constructor() {
     super()
@@ -60,10 +60,10 @@ export class ParkyDB extends WalletController {
     })
 
     this.db = db
+    this.messagingService = new MessagingService(undefined, '', '')
   }
 
   async initialize(options: any = { wakuconnect: null }) {
-
     if (options.withWallet) {
       await this.load(this.db)
       await this.createVault(
@@ -71,12 +71,18 @@ export class ParkyDB extends WalletController {
         options.withWallet.seed,
       )
     }
+    if (options.withWeb3) {
+      this.messagingService = new MessagingService(
+        options.withWeb3.provider,
+        options.withWeb3.pubkey,
+        options.withWeb3.address,
+      )
+    }
     this.db.blockdb.hook(
       'creating',
       this.hooks.attachRouter(this.onBlockCreated),
     )
     return this.messagingService.bootstrap(options.wakuconnect)
-
   }
   async putBlock(payload: any, options: any = {}) {
     const block = await this.dagService.build({ ...payload, ...options })
@@ -93,9 +99,9 @@ export class ParkyDB extends WalletController {
     return this.db.blockdb.put({
       cid: key.toString(),
       dag: value,
-      document: (value.value),
+      document: value.value,
       schemas: {
-        jsonschema: (jsch),
+        jsonschema: jsch,
       },
       hashtag: mj.hash(value.value),
       index: JSON.stringify(miniSearch),

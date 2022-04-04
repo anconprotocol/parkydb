@@ -104,9 +104,11 @@ import { ParkyDB } from 'parkydb'
 
 // Instantiate new DB instance
 const db = new ParkyDB()
+// Browsers can only support web sockets connections with Waku v2
 const peer =
-    '/ip4/0.0.0.0/tcp/60000/p2p/...'
+    '/ip4/0.0.0.0/tcp/8000/wss/p2p/...'
   await this.bob.initialize({
+    // wakuconnec options
     wakuconnect: { bootstrap: { peers: [peer] } },
     // Remember these values come from a CLI or UI, DO NOT hardcode when implementing
     withWallet: {
@@ -162,7 +164,14 @@ import { ParkyDB } from 'parkydb'
 // Instantiate new DB instance
 const db = new ParkyDB()
 await db.initialize({
-  // Remember these values come from a CLI or UI, DO NOT hardcode when implementing
+  // withWeb3 for interactive usage, eg browsers, smart phones.
+  withWeb3: {
+    provider: ethers.providers.Web3Provider(windows.ethereum),
+    pubkey,
+    defaultAddress,
+  },
+  // withWallet useful for backend use cases (eg NestJS)
+  // Remember these values come from a environment variables, CLI or UI, DO NOT hardcode when implementing
   withWallet: {
     password: '',
     // Note: Invented this mnemonic rap, 12 words, as my way to protest #WARINUKRAINE

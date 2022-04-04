@@ -7,10 +7,10 @@ export declare class ParkyDB extends WalletController {
     private dagService;
     private graphqlService;
     private jsonschemaService;
-    private messagingService;
     private hooks;
     private onBlockCreated;
     db: any;
+    private messagingService;
     constructor();
     initialize(options?: any): Promise<boolean>;
     putBlock(payload: any, options?: any): Promise<any>;
