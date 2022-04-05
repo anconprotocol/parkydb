@@ -53,8 +53,9 @@ export class ParkyDB {
     )
 
     db.version(1).stores({
-      keyring: `&id`,
+      keyring: `id`,
       blockdb: `
+        ++id,
         &cid,
         topic,
         kind,
@@ -123,18 +124,14 @@ export class ParkyDB {
     // creates an observable and subscribes to store block creation
     return this.messagingService.createTopic(topic, this.onBlockCreated)
   }
-  getWallet():any{
+  async getWallet(): Promise<any> {
+    // await this.keyringController.load(this.db)
     return this.keyringController.keyringController
-  }
-  async addEd25519(keys: Array<string>) {
-    return this.keyringController.keyringController.addNewKeyring(Ed25519.type, keys)
-  }
-  async addSecp256k1(keys: Array<string>) {
-    return this.keyringController.keyringController.addNewKeyring(Simple.type, keys)
   }
 
   async createChannelPubsub(topic: string, options: ChannelOptions) {
-    const h = await this.getWallet().exportAccount(options.from)
+    const w = await this.getWallet()
+    const h = await w.exportAccount(options.from)
 
     const sigkey = Buffer.from(h, 'hex')
     const pubkey = getPublicKey(sigkey)

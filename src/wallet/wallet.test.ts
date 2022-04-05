@@ -5,6 +5,7 @@ const c = require('crypto').webcrypto;
 global.crypto = c
 
 import { ParkyDB } from '../core/db'
+import { Simple } from './simple';
 
 const payload = {
   commitHash: 'xg8pyBr3McqYlUgxAqV0t3s6TRcP+B7MHyPTtyVKMJw=',
@@ -67,14 +68,19 @@ test.beforeEach(async (t) => {
 test('add key ring', async (t) => {
   const { db } = t.context as any
 
+  const w = await db.getWallet()
+  await w.submitPassword('qwerty')
+  
   // await db.getWallet().submitPassword(`qwerty`)
-  await db.addEd25519([
+  await w.addNewKeyring(Simple.type, [
     'c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3',
   ])
   // await db.addNewKeyring('HD Key Tree', [
   //   'c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3',
   // ])
-  const accounts = await db.getWallet().getAccounts()
+  
 
-  t.is(accounts.length, 2)
+  const accounts = await w.getAccounts()
+
+  t.is(accounts.length, 1)
 })

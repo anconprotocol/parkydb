@@ -23,9 +23,7 @@ export declare class ParkyDB {
     }>;
     put(key: CID, value: Block<any>): Promise<any>;
     createTopicPubsub(topic: string): Promise<import("../interfaces/PubsubTopic").PubsubTopic>;
-    getWallet(): any;
-    addEd25519(keys: Array<string>): Promise<any>;
-    addSecp256k1(keys: Array<string>): Promise<any>;
+    getWallet(): Promise<any>;
     createChannelPubsub(topic: string, options: ChannelOptions): Promise<import("..").ChannelTopic>;
     get(key: any, options?: any): Promise<any>;
     queryBlocks$(fn: (blocks: Table) => () => unknown): Promise<import("dexie").Observable<unknown>>;

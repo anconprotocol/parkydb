@@ -12,7 +12,6 @@ interface AccountWallet {
 }
 
 export class WalletController implements IKeyringController {
-  
   constructor(public keyringController?: any) {}
 
   async load(vaultStorage: Dexie | any) {
@@ -27,7 +26,6 @@ export class WalletController implements IKeyringController {
       await vaultStorage.keyring.put({ id: 1, keyring: state }, 1)
     })
   }
-
 
   async createVault(password: string, seed?: string) {
     if (seed) {

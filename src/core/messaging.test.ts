@@ -7,6 +7,7 @@ import { ChannelCodeEnum } from '../interfaces/BlockCodec'
 import { BlockValue } from '../interfaces/Blockvalue'
 import { ParkyDB } from './db'
 import { MessagingService } from './messaging'
+import { Simple } from '../wallet/simple'
 
 const payload = {
   commitHash: 'xg8pyBr3McqYlUgxAqV0t3s6TRcP+B7MHyPTtyVKMJw=',
@@ -61,15 +62,7 @@ test.beforeEach(async (t) => {
     },
   })
 
-  const bob = new ParkyDB()
-  await bob.initialize({
-    // Remember these values come from a CLI or UI, DO NOT hardcode when implementing
-    withWallet: {
-      password: 'zxcvb',
-      seed:
-        'opera offer craft joke defy team prosper tragic reopen street advice moral',
-    },
-  })
+  const bob = alice
 
   t.context = {
     db: alice,
@@ -79,16 +72,18 @@ test.beforeEach(async (t) => {
 })
 
 test('add key ring', async (t) => {
-  const { db }: { db: ParkyDB } = t.context as any
+  const { alice }: { alice: ParkyDB } = t.context as any
 
-  // await db.getWallet().submitPassword(`qwerty`)
-  await db.addSecp256k1([
-    'c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3',
-  ])
   // await db.addNewKeyring('HD Key Tree', [
   //   'c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3',
   // ])
-  const accounts = await db.getWallet().getAccounts()
+  const aw = await alice.getWallet()
+  await aw.submitPassword(`qwerty`)
+  // await db.getWallet().submitPassword(`qwerty`)
+  const kr = await aw.addNewKeyring(Simple.type, [
+    'c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3',
+  ])
+  const accounts = await aw.getAccounts()
 
   t.is(accounts.length, 1)
 })
@@ -96,20 +91,28 @@ test('add key ring', async (t) => {
 test('create topic', async (t) => {
   const { alice, bob }: { alice: ParkyDB; bob: ParkyDB } = t.context as any
 
-  await alice.addSecp256k1([
+  // @ts-ignore
+  const aw = await alice.getWallet()
+  await aw.submitPassword(`qwerty`)
+
+  await aw.addNewKeyring(Simple.type, [
     'c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3',
   ])
-  // @ts-ignore
-  await alice.getWallet().submitPassword(`qwerty`)
-  let accounts = await alice.getWallet().getAccounts()
+
+  let accounts = await aw.getAccounts()
   t.is(accounts.length, 1)
   const accountA = accounts[0]
 
   // @ts-ignore
-  await bob.getWallet().submitPassword(`zxcvb`)
-  accounts = await alice.getWallet().getAccounts()
+  const bw = await bob.getWallet()
+  await bw.submitPassword(`qwerty`)
+  await bw.addNewKeyring(Simple.type, [
+    'c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d1',
+  ])
+
+  accounts = await bw.getAccounts()
   t.is(accounts.length, 1)
-  const accountB = accounts[0]
+  const accountB = accounts[1]
 
   const topic = `/anconprotocol/1/marketplace/ipld-dag-json`
   const pubsubAlice = await alice.createTopicPubsub(topic)
@@ -131,20 +134,28 @@ test('create topic', async (t) => {
 test('create channel topic', async (t) => {
   const { alice, bob }: { alice: ParkyDB; bob: ParkyDB } = t.context as any
 
-  await alice.addSecp256k1([
+
+  // @ts-ignore
+  const aw = await alice.getWallet()
+  await aw.submitPassword(`qwerty`)
+
+  await aw.addNewKeyring(Simple.type, [
     'c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3',
   ])
-  // @ts-ignore
-  await alice.getWallet().submitPassword(`qwerty`)
-  let accounts = await alice.getWallet().getAccounts()
+
+  let accounts = await aw.getAccounts()
   t.is(accounts.length, 1)
   const accountA = accounts[0]
 
   // @ts-ignore
-    await bob.getWallet().submitPassword(`zxcvb`)
-    accounts = await bob.getWallet().getAccounts()
-    t.is(accounts.length, 1)
-    const accountB = accounts[0]
+  const bw = await bob.getWallet()
+  await bw.submitPassword(`qwerty`)
+  await bw.addNewKeyring(Simple.type, [
+    'c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d1',
+  ])
+  accounts = await bw.getAccounts()
+  t.is(accounts.length, 1)
+  const accountB = accounts[0]
 
   const blockCodec = {
     name: 'cbor',
