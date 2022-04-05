@@ -228,10 +228,10 @@ export class MessagingService implements IMessaging {
         ...options.middleware.outgoing,
       )
       .subscribe(async (block: any) => {
-        const view = options.blockCodec.encode(block)
+        const view = await options.blockCodec.encode(block)
         const msg = await WakuMessage.fromBytes(view, topic, {
           encPublicKey: options.pubkey,
-          sigPrivKey: options.sigkey,
+          // sigPrivKey: options.sigkey,
         })
         await this.waku.relay.send(msg)
       })
