@@ -67,15 +67,15 @@ export class ParkyDB {
   }
 
   async initialize(options: any = { wakuconnect: null }) {
+    await this.keyringController.load(this.db)
+
     if (options.withWallet) {
       if (options.withWallet.autoLogin) {
         try {
-          await this.keyringController.keyringController.submitPassword(
+          const kr = await this.keyringController.keyringController.submitPassword(
             options.withWallet.password,
           )
-          await this.keyringController.load(this.db)
         } catch (e) {
-          await this.keyringController.load(this.db)
           await this.keyringController.createVault(
             options.withWallet.password,
             options.withWallet.seed,
