@@ -57,6 +57,7 @@ export class ParkyDB {
       blockdb: `
         ++id,
         &cid,
+        uuid,
         topic,
         kind,
         timestamp`,
