@@ -81,14 +81,14 @@ test.beforeEach(async (t) => {
 test('add key ring', async (t) => {
   const { db }: { db: ParkyDB } = t.context as any
 
-  // await db.wallet.submitPassword(`qwerty`)
+  // await db.getWallet().submitPassword(`qwerty`)
   await db.addSecp256k1([
     'c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3',
   ])
   // await db.addNewKeyring('HD Key Tree', [
   //   'c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3',
   // ])
-  const accounts = await db.wallet.getAccounts()
+  const accounts = await db.getWallet().getAccounts()
 
   t.is(accounts.length, 1)
 })
@@ -100,14 +100,14 @@ test('create topic', async (t) => {
     'c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3',
   ])
   // @ts-ignore
-  await alice.wallet.submitPassword(`qwerty`)
-  let accounts = await alice.wallet.getAccounts()
+  await alice.getWallet().submitPassword(`qwerty`)
+  let accounts = await alice.getWallet().getAccounts()
   t.is(accounts.length, 1)
   const accountA = accounts[0]
 
   // @ts-ignore
-  await bob.wallet.submitPassword(`zxcvb`)
-  accounts = await alice.wallet.getAccounts()
+  await bob.getWallet().submitPassword(`zxcvb`)
+  accounts = await alice.getWallet().getAccounts()
   t.is(accounts.length, 1)
   const accountB = accounts[0]
 
@@ -135,14 +135,14 @@ test('create channel topic', async (t) => {
     'c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3',
   ])
   // @ts-ignore
-  await alice.wallet.submitPassword(`qwerty`)
-  let accounts = await alice.wallet.getAccounts()
+  await alice.getWallet().submitPassword(`qwerty`)
+  let accounts = await alice.getWallet().getAccounts()
   t.is(accounts.length, 1)
   const accountA = accounts[0]
 
   // @ts-ignore
-    await bob.wallet.submitPassword(`zxcvb`)
-    accounts = await bob.wallet.getAccounts()
+    await bob.getWallet().submitPassword(`zxcvb`)
+    accounts = await bob.getWallet().getAccounts()
     t.is(accounts.length, 1)
     const accountB = accounts[0]
 
@@ -196,20 +196,20 @@ test('create channel topic', async (t) => {
 //     consumer: ParkyDB
 //   } = t.context as any
 
-//   await alice.wallet.submitPassword(`qwerty`)
-//   let accounts = await alice.wallet.getAccounts()
+//   await alice.getWallet().submitPassword(`qwerty`)
+//   let accounts = await alice.getWallet().getAccounts()
 //   const accountA = accounts[0]
 
-//   await bob.wallet.submitPassword(`zxcvb`)
-//   accounts = await bob.wallet.getAccounts()
+//   await bob.getWallet().submitPassword(`zxcvb`)
+//   accounts = await bob.getWallet().getAccounts()
 //   const accountB = accounts[0]
 
-//   await charlie.wallet.submitPassword(`a1d2f3f4`)
-//   accounts = await charlie.wallet.getAccounts()
+//   await charlie.getWallet().submitPassword(`a1d2f3f4`)
+//   accounts = await charlie.getWallet().getAccounts()
 //   const accountC = accounts[0]
 
-//   await consumer.wallet.submitPassword(`mknjbhvgv`)
-//   accounts = await consumer.wallet.getAccounts()
+//   await consumer.getWallet().submitPassword(`mknjbhvgv`)
+//   accounts = await consumer.getWallet().getAccounts()
 //   const accountConsumer = accounts[0]
 
 //   const blockCodec = {

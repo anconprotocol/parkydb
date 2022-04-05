@@ -124,7 +124,7 @@ export class ParkyDB extends WalletController {
   }
 
   async createChannelPubsub(topic: string, options: ChannelOptions) {
-    const h = await this.wallet.exportAccount(options.from)
+    const h = await this.getWallet().exportAccount(options.from)
 
     const sigkey = Buffer.from(h, 'hex')
     const pubkey = getPublicKey(sigkey)

@@ -34,7 +34,7 @@ export class WalletController implements IKeyringController {
     return this.keyringController.addNewKeyring(Simple.type, keys)
   }
 
-  get wallet(): AccountWallet {
+  getWallet(){
     return this.keyringController
   }
 
