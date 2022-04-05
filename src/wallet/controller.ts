@@ -13,7 +13,7 @@ interface AccountWallet {
 
 export class WalletController implements IKeyringController {
   
-  constructor(private keyringController?: any) {}
+  constructor(public keyringController?: any) {}
 
   async load(vaultStorage: Dexie | any) {
     let kr = await vaultStorage.keyring.get({ id: 1 })
@@ -27,16 +27,7 @@ export class WalletController implements IKeyringController {
       await vaultStorage.keyring.put({ id: 1, keyring: state }, 1)
     })
   }
-  async addEd25519(keys: Array<string>) {
-    return this.keyringController.addNewKeyring(Ed25519.type, keys)
-  }
-  async addSecp256k1(keys: Array<string>) {
-    return this.keyringController.addNewKeyring(Simple.type, keys)
-  }
 
-  getWallet(){
-    return this.keyringController
-  }
 
   async createVault(password: string, seed?: string) {
     if (seed) {

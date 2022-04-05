@@ -23,12 +23,15 @@ import { Subject } from 'rxjs'
 import { BlockValue } from '../interfaces/Blockvalue'
 import { WalletController } from '../wallet/controller'
 import { getPublicKey } from 'js-waku'
+import { Ed25519 } from '../wallet/ed25519keyring'
+import { Simple } from '../wallet/simple'
 const { MerkleJson } = require('merkle-json')
 
 /**
  * ParkyDB core class
  */
-export class ParkyDB extends WalletController {
+export class ParkyDB {
+  private keyringController = new WalletController()
   private dagService = new DAGJsonService()
   private graphqlService = new GraphqlService()
   private jsonschemaService = new JsonSchemaService()
@@ -39,8 +42,6 @@ export class ParkyDB extends WalletController {
   private messagingService: MessagingService
 
   constructor() {
-    super()
-
     const db: Dexie | any = new Dexie(
       'ancon',
       global.window
@@ -66,8 +67,8 @@ export class ParkyDB extends WalletController {
 
   async initialize(options: any = { wakuconnect: null }) {
     if (options.withWallet) {
-      await this.load(this.db)
-      await this.createVault(
+      await this.keyringController.load(this.db)
+      await this.keyringController.createVault(
         options.withWallet.password,
         options.withWallet.seed,
       )
@@ -121,6 +122,15 @@ export class ParkyDB extends WalletController {
   async createTopicPubsub(topic: string) {
     // creates an observable and subscribes to store block creation
     return this.messagingService.createTopic(topic, this.onBlockCreated)
+  }
+  getWallet():any{
+    return this.keyringController.keyringController
+  }
+  async addEd25519(keys: Array<string>) {
+    return this.keyringController.keyringController.addNewKeyring(Ed25519.type, keys)
+  }
+  async addSecp256k1(keys: Array<string>) {
+    return this.keyringController.keyringController.addNewKeyring(Simple.type, keys)
   }
 
   async createChannelPubsub(topic: string, options: ChannelOptions) {
