@@ -68,10 +68,10 @@ test('add key ring', async (t) => {
   const { db } = t.context as any
 
   // await db.wallet.submitPassword(`qwerty`)
-  await db.wallet.addEd25519([
+  await db.addEd25519([
     'c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3',
   ])
-  // await db.wallet.addNewKeyring('HD Key Tree', [
+  // await db.addNewKeyring('HD Key Tree', [
   //   'c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3',
   // ])
   const accounts = await db.wallet.getAccounts()

@@ -82,10 +82,10 @@ test('add key ring', async (t) => {
   const { db }: { db: ParkyDB } = t.context as any
 
   // await db.wallet.submitPassword(`qwerty`)
-  await db.wallet.addSecp256k1([
+  await db.addSecp256k1([
     'c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3',
   ])
-  // await db.wallet.addNewKeyring('HD Key Tree', [
+  // await db.addNewKeyring('HD Key Tree', [
   //   'c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3',
   // ])
   const accounts = await db.wallet.getAccounts()
@@ -96,7 +96,7 @@ test('add key ring', async (t) => {
 test('create topic', async (t) => {
   const { alice, bob }: { alice: ParkyDB; bob: ParkyDB } = t.context as any
 
-  await alice.wallet.addSecp256k1([
+  await alice.addSecp256k1([
     'c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3',
   ])
   // @ts-ignore
@@ -131,7 +131,7 @@ test('create topic', async (t) => {
 test('create channel topic', async (t) => {
   const { alice, bob }: { alice: ParkyDB; bob: ParkyDB } = t.context as any
 
-  await alice.wallet.addSecp256k1([
+  await alice.addSecp256k1([
     'c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3',
   ])
   // @ts-ignore

@@ -7,9 +7,11 @@ interface AccountWallet {
     addSecp256k1(keys: string[]): Promise<any>;
 }
 export declare class WalletController implements IKeyringController {
-    private keyringController;
+    keyringController: any;
     constructor();
     load(vaultStorage: Dexie | any): Promise<void>;
+    addEd25519(keys: Array<string>): Promise<any>;
+    addSecp256k1(keys: Array<string>): Promise<any>;
     get wallet(): AccountWallet;
     createVault(password: string, seed?: string): Promise<any>;
 }

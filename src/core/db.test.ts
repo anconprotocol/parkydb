@@ -46,8 +46,14 @@ const payload = {
 
 test.beforeEach(async (t) => {
   const db = new ParkyDB()
-  await db.initialize()
-
+  await db.initialize({
+    // Remember these values come from a CLI or UI, DO NOT hardcode when implementing
+    withWallet: {
+      password: 'zxcvb',
+      seed:
+        'opera offer craft joke defy team prosper tragic reopen street advice moral',
+    },
+  })
   t.context = {
     db,
   }
@@ -59,7 +65,7 @@ test('foo', (t) => {
 
 test('put', async (t) => {
   const { db } = t.context as any
-  const id = await db.putBlock(payload)
+  const { id } = await db.putBlock(payload)
   const res = await db.get(id, null)
 
   // db.queryDb((blocks)=>{
@@ -79,4 +85,3 @@ test('put', async (t) => {
 
   t.is(id, 'baguqeera73x5r73wfcwikxqxm6i3chhbvdhymsrekxkef6ejm3ymi4u2e4zq')
 })
-

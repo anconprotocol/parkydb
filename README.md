@@ -200,13 +200,13 @@ await db.wallet.addNewKeyring('Ed25519', [
 test('create channel topic, signed and encrypted, cbor as message serialization', async (t) => {
   const { alice, bob }: { alice: ParkyDB; bob: ParkyDB } = t.context as any
 
-  await alice.wallet.addSecp256k1([
+  await alice.addSecp256k1([
     'c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3',
-  ])
-  await alice.wallet.submitPassword(`qwerty`)
-  let accounts = await alice.wallet.getAccounts()
-  t.is(accounts.length, 1)
-  const accountA = accounts[0]
+    ])
+    await alice.wallet.submitPassword(`qwerty`)
+    let accounts = await alice.wallet.getAccounts()
+    t.is(accounts.length, 1)
+    const accountA = accounts[0]
 
   await bob.wallet.submitPassword(`zxcvb`)
   accounts = await bob.wallet.getAccounts()
@@ -229,7 +229,7 @@ test('create channel topic, signed and encrypted, cbor as message serialization'
     blockCodec,
   })
   pubsubAlice.onBlockReply$.subscribe(async (block: WakuMessage) => {
-    // match topic
+    // match topic                              
     t.is(topic, JSON.parse(block.payloadAsUtf8).topic)
   })
   const pubsubBob = await bob.createChannelPubsub(topic, {
