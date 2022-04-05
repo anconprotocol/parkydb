@@ -68,11 +68,20 @@ export class ParkyDB {
 
   async initialize(options: any = { wakuconnect: null }) {
     if (options.withWallet) {
-      await this.keyringController.load(this.db)
-      await this.keyringController.createVault(
-        options.withWallet.password,
-        options.withWallet.seed,
-      )
+      if (options.withWallet.autoLogin) {
+        try {
+          await this.keyringController.keyringController.submitPassword(
+            options.withWallet.password,
+          )
+          await this.keyringController.load(this.db)
+        } catch (e) {
+          await this.keyringController.load(this.db)
+          await this.keyringController.createVault(
+            options.withWallet.password,
+            options.withWallet.seed,
+          )
+        }
+      }
     }
     if (options.withWeb3) {
       this.messagingService = new MessagingService(
@@ -85,6 +94,7 @@ export class ParkyDB {
       'creating',
       this.hooks.attachRouter(this.onBlockCreated),
     )
+    options.withWallet.password = undefined
     return this.messagingService.bootstrap(options.wakuconnect)
   }
 

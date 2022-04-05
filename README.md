@@ -112,10 +112,11 @@ const db = new ParkyDB()
 const peer =
     '/ip4/0.0.0.0/tcp/8000/wss/p2p/...'
   await this.bob.initialize({
-    // wakuconnec options
+    // wakuconnect options
     wakuconnect: { bootstrap: { peers: [peer] } },
     // Remember these values come from a CLI or UI, DO NOT hardcode when implementing
     withWallet: {
+      autoLogin: true,
       password: 'zxcvb',
       seed: 'opera offer craft joke defy team prosper tragic reopen street advice moral',
     },

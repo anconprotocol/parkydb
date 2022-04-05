@@ -54,6 +54,7 @@ test.beforeEach(async (t) => {
   await db.initialize({
     // Remember these values come from a CLI or UI, DO NOT hardcode when implementing
     withWallet: {
+      autoLogin: true,
       password: 'qwerty',
       seed:
         'window alpha view text barely urge minute nasty motion curtain need dinosaur',
