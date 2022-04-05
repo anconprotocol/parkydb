@@ -12,8 +12,8 @@ interface AccountWallet {
 }
 
 export class WalletController implements IKeyringController {
-  keyringController: any
-  constructor() {}
+  
+  constructor(private keyringController?: any) {}
 
   async load(vaultStorage: Dexie | any) {
     let kr = await vaultStorage.keyring.get({ id: 1 })
