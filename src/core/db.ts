@@ -25,6 +25,7 @@ import { WalletController } from '../wallet/controller'
 import { getPublicKey } from 'js-waku'
 import { Ed25519 } from '../wallet/ed25519keyring'
 import { Simple } from '../wallet/simple'
+import { ethers } from 'ethers'
 const { MerkleJson } = require('merkle-json')
 
 /**
@@ -111,7 +112,7 @@ export class ParkyDB {
       return { id: block.cid.toString() }
     }
   }
-  
+
   async put(key: CID, value: Block<any>) {
     const jsch = await this.jsonschemaService.build(value.value)
     const mj = new MerkleJson()
@@ -144,7 +145,13 @@ export class ParkyDB {
 
   async createChannelPubsub(topic: string, options: ChannelOptions) {
     const w = await this.getWallet()
-    const h = await w.exportAccount(options.from)
+    let from = options.from
+    if (from === '') {
+      const acct = await w.getAccounts()
+      from = acct[0]
+    }
+
+    const h = await w.exportAccount(from)
 
     const sigkey = Buffer.from(h, 'hex')
     const pubkey = getPublicKey(sigkey)
@@ -155,18 +162,120 @@ export class ParkyDB {
     )
   }
 
+  async createAnconDid(options: {
+    api: string
+    chainId: string
+    from: string
+  }) {
+    const w = await this.getWallet()
+    let from = options.from
+    if (from === '') {
+      const acct = await w.getAccounts()
+      from = acct[0]
+    }
+    const h = await w.exportAccount(from)
+    const sigkey = Buffer.from(h, 'hex')
+    const pubkey = getPublicKey(sigkey)
+    // encode the pub key
+    const base58Encode = ethers.utils.base58.encode(pubkey)
+
+    const message = `#Welcome to Ancon Protocol!
+
+    For more information read the docs https://anconprotocol.github.io/docs/
+
+    To make free posts and gets to the DAG Store you have to enroll and pay the service fee
+
+    This request will not trigger a blockchain transaction or cost any gas fees.
+    by signing this message you accept the terms and conditions of Ancon Protocol
+    `
+    const signature = await w.signPersonalMessage({
+      from,
+      data: ethers.utils.hashMessage(message),
+    })
+
+    //post to get the did
+    const payload = {
+      ethrdid: `did:ethr:${options.chainId}:${from}`,
+      pub: base58Encode,
+      signature: signature,
+      message: message,
+    }
+
+    const requestOptions = {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    }
+
+    // fetch
+    const rawResponse = await fetch(
+      // @ts-ignore
+      `${api}/v0/did`,
+      requestOptions,
+    )
+    //   json response
+    return rawResponse.json()
+  }
+
+  async createAnconBlock(options: {
+    api: string
+    chainId: string
+    from: string
+    message: string
+  }) {
+    const w = await this.getWallet()
+    let from = options.from
+    if (from === '') {
+      const acct = await w.getAccounts()
+      from = acct[0]
+    }
+
+    const signature = await w.signPersonalMessage({
+      from,
+      data: ethers.utils.hashMessage(options.message),
+    })
+
+    const payload = {
+      path: '/',
+      from: `did:ethr:${options.chainId}:${from}`,
+      signature,
+      data: options.message,
+    }
+
+    const requestOptions = {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    }
+
+    // fetch
+    const rawResponse = await fetch(
+      // @ts-ignore
+      `${api}/v0/dag`,
+      requestOptions,
+    )
+    //   json response
+    return rawResponse.json()
+  }
+
   async aggregate(topic: string[], options: ChannelOptions) {
     const w = await this.getWallet()
-    const h = await w.exportAccount(options.from)
+    let from = options.from
+    if (from === '') {
+      const acct = await w.getAccounts()
+      from = acct[0]
+    }
+
+    const h = await w.exportAccount(from)
 
     const sigkey = Buffer.from(h, 'hex')
     const pubkey = getPublicKey(sigkey)
-    return this.messagingService.aggregate(
-      topic,
-      { ...options, sigkey, pubkey },
-    )
+    return this.messagingService.aggregate(topic, {
+      ...options,
+      sigkey,
+      pubkey,
+    })
   }
-
 
   /**
    *
