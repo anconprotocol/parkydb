@@ -13,7 +13,10 @@ export declare class ParkyDB {
     db: any;
     private messagingService;
     constructor();
-    initialize(options?: any): Promise<boolean>;
+    initialize(options?: any): Promise<{
+        waku: import("js-waku").Waku;
+        connected: void;
+    }>;
     putBlock(payload: any, options?: any): Promise<{
         id: string;
         model: any;

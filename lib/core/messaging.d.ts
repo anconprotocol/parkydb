@@ -25,7 +25,10 @@ export declare class MessagingService implements IMessaging {
     waku: Waku;
     constructor(web3Provider: any, pubkey: string, defaultAddress: string);
     load(key: any, data: any): Promise<any>;
-    bootstrap(options: any): Promise<boolean>;
+    bootstrap(options: any): Promise<{
+        waku: Waku;
+        connected: void;
+    }>;
     signEncryptionKey(appName: string, encryptionPublicKeyHex: string, ownerAddressHex: string, providerRequest: (request: {
         method: string;
         from: string;

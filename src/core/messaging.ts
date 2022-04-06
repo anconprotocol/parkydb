@@ -53,7 +53,8 @@ export class MessagingService implements IMessaging {
   async bootstrap(options: any) {
     const config = options || { bootstrap: { default: true } }
     this.waku = await Waku.create(config)
-    return true // this.waku.waitForRemotePeer()
+    const available = await this.waku.waitForRemotePeer()
+    return { waku: this.waku, connected: available};
   }
 
   async signEncryptionKey(
@@ -183,7 +184,9 @@ export class MessagingService implements IMessaging {
         return this.waku.relay.send(msg)
       },
       close: () => {
-        if (cancel) cancel.unsubscribe()
+        if (cancel) {
+          cancel.unsubscribe()
+        }
       },
     }
   }
