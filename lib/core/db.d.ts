@@ -28,6 +28,7 @@ export declare class ParkyDB {
     createTopicPubsub(topic: string): Promise<import("../interfaces/PubsubTopic").PubsubTopic>;
     getWallet(): Promise<any>;
     createChannelPubsub(topic: string, options: ChannelOptions): Promise<import("..").ChannelTopic>;
+    aggregate(topic: string[], options: ChannelOptions): Promise<import("..").ChannelTopic>;
     get(key: any, options?: any): Promise<any>;
     queryBlocks$(fn: (blocks: Table) => () => unknown): Promise<import("dexie").Observable<unknown>>;
     query(options: any): Promise<any>;

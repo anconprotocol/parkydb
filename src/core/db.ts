@@ -155,6 +155,19 @@ export class ParkyDB {
     )
   }
 
+  async aggregate(topic: string[], options: ChannelOptions) {
+    const w = await this.getWallet()
+    const h = await w.exportAccount(options.from)
+
+    const sigkey = Buffer.from(h, 'hex')
+    const pubkey = getPublicKey(sigkey)
+    return this.messagingService.aggregate(
+      topic,
+      { ...options, sigkey, pubkey },
+    )
+  }
+
+
   /**
    *
    * @param key
