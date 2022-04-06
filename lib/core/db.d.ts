@@ -35,6 +35,7 @@ export declare class ParkyDB {
     }): Promise<any>;
     createAnconBlock(options: {
         api: string;
+        topic: string;
         chainId: string;
         from: string;
         message: string;

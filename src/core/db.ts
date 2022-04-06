@@ -219,6 +219,7 @@ export class ParkyDB {
 
   async createAnconBlock(options: {
     api: string
+    topic: string
     chainId: string
     from: string
     message: string
@@ -239,6 +240,7 @@ export class ParkyDB {
       path: '/',
       from: `did:ethr:${options.chainId}:${from}`,
       signature,
+      topic: options.topic,
       data: options.message,
     }
 
