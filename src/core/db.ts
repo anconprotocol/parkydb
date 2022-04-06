@@ -54,6 +54,7 @@ export class ParkyDB {
 
     db.version(1).stores({
       keyring: `id`,
+      history: `&cid, refs`,
       blockdb: `
         ++id,
         &cid,
@@ -110,6 +111,7 @@ export class ParkyDB {
       return { id: block.cid.toString() }
     }
   }
+  
   async put(key: CID, value: Block<any>) {
     const jsch = await this.jsonschemaService.build(value.value)
     const mj = new MerkleJson()
