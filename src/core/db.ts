@@ -66,6 +66,10 @@ export class ParkyDB {
     })
 
     this.db = db
+    this.db.blockdb.hook(
+      'creating',
+      this.hooks.attachRouter(this.onBlockCreated),
+    )
     this.messagingService = new MessagingService(undefined, '', '')
   }
 
@@ -90,13 +94,10 @@ export class ParkyDB {
       this.messagingService = new MessagingService(
         options.withWeb3.provider,
         options.withWeb3.pubkey,
-        options.withWeb3.address,
+        options.withWeb3.defaultAddress,
       )
     }
-    this.db.blockdb.hook(
-      'creating',
-      this.hooks.attachRouter(this.onBlockCreated),
-    )
+
     options.withWallet.password = undefined
     return this.messagingService.bootstrap(options.wakuconnect)
   }
@@ -296,6 +297,15 @@ export class ParkyDB {
    */
   async queryBlocks$(fn: (blocks: Table) => () => unknown) {
     return liveQuery(fn(this.db.blockdb))
+  }
+
+  /**
+   *
+   * @param options
+   * @returns
+   */
+  async getBlocksByTableName$(tableName: string, fn: (table: Table) => () => unknown) {
+    return liveQuery(fn(this.db[tableName]))
   }
 
   /**
