@@ -173,6 +173,7 @@ await db.initialize({
   withWeb3: {
     provider: ethers.providers.Web3Provider(windows.ethereum),
     pubkey,
+    pubkeySig,
     defaultAddress,
   },
   // withWallet useful for backend use cases (eg NestJS)

@@ -70,7 +70,7 @@ export class ParkyDB {
       'creating',
       this.hooks.attachRouter(this.onBlockCreated),
     )
-    this.messagingService = new MessagingService(undefined, '', '')
+    this.messagingService = new MessagingService(undefined, '', '', '')
   }
 
   async initialize(options: any = { wakuconnect: null }) {
@@ -95,6 +95,7 @@ export class ParkyDB {
         options.withWeb3.provider,
         options.withWeb3.pubkey,
         options.withWeb3.defaultAddress,
+        options.withWeb3.pubkeySig,
       )
     }
 

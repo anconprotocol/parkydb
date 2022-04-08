@@ -45,6 +45,7 @@ export class MessagingService implements IMessaging {
   constructor(
     private web3Provider: any,
     private pubkey: string,
+    private pubkeySig: string,
     private defaultAddress: string,
   ) {}
 
@@ -141,9 +142,9 @@ export class MessagingService implements IMessaging {
     const pubsub = new Subject<any>()
     this.waku.relay.addObserver(
       (msg: any) => {
-        let message = decode(msg) as PacketPayload
+        let message = decode(msg.payload) as PacketPayload
         if (this.pubkey && this.defaultAddress && this.web3Provider) {
-          message = decode(msg) as SecurePacketPayload
+          message = decode(msg.payload) as SecurePacketPayload
         }
         pubsub.next(message)
       },
@@ -154,14 +155,15 @@ export class MessagingService implements IMessaging {
     const cancel = blockPublisher.subscribe(async (block: BlockValue) => {
       let message: any = { payload: block.document }
       if (this.pubkey && this.defaultAddress && this.web3Provider) {
-        const sig = await this.signEncryptionKey(
-          topic.split('/')[2],
-          this.pubkey,
-          this.defaultAddress,
-          this.web3Provider.provider.request,
-        )
+        // TODO: Use this later on with non tx reqs
+        // const sig = await this.signEncryptionKey(
+        //   topic.split('/')[2],
+        //   this.pubkey,
+        //   this.defaultAddress,
+        //   this.web3Provider.provider.request,
+        // )
         const pubkeyMessage = {
-          signature: sig,
+          signature: this.pubkeySig,
           ethAddress: this.defaultAddress,
           encryptionPublicKey: this.pubkey,
         } as PublicKeyMessage
