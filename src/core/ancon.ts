@@ -36,14 +36,13 @@ export class AnconService {
         This request will not trigger a blockchain transaction or cost any gas fees.
         by signing this message you accept the terms and conditions of Ancon Protocol
         `
-    const signature = await this.provider.signMessage.signPersonalMessage({
-      from: this.provider.accounts[0],
-      data: ethers.utils.hashMessage(message),
-    })
-
-    //post to get the did
+    const { signature, digest } = await this.sign(
+      message,
+    )
+    const web3provider = new ethers.providers.Web3Provider(this.provider)
+    const network = await web3provider.getNetwork()
     const payload = {
-      ethrdid: `did:ethr:${this.provider.chainId}:${this.provider.accounts[0]}`,
+      ethrdid: `did:ethr:${network.name}:${this.provider.accounts[0]}`,
       pub: base58Encode,
       signature: signature,
       message: message,
@@ -69,9 +68,11 @@ export class AnconService {
     const { signature, digest } = await this.sign(
       JSON.stringify(options.message),
     )
+    const web3provider = new ethers.providers.Web3Provider(this.provider)
+    const network = await web3provider.getNetwork()
     const payload = {
       path: '/',
-      from: `did:ethr:${this.provider.chainId}:${this.provider.accounts[0]}`,
+      from: `did:ethr:${network.name}:${this.provider.accounts[0]}`,
       signature,
       topic: options.topic,
       data: options.message,

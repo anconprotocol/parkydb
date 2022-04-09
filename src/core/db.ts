@@ -40,9 +40,12 @@ export class ParkyDB {
   private jsonschemaService = new JsonSchemaService()
   private hooks = new Hooks()
   private onBlockCreated = new Subject<BlockValue>()
-  private anconService: AnconService | undefined
-  private messagingService: MessagingService | undefined
-  private ipfsService: IPFSService | undefined
+  // @ts-ignore
+  private anconService: AnconService
+  // @ts-ignore
+  private messagingService: MessagingService
+  // @ts-ignore
+  private ipfsService: IPFSService
   db: any
   constructor() {
     const db: Dexie | any = new Dexie(
@@ -75,7 +78,7 @@ export class ParkyDB {
     )
   }
 
-  async initialize(options: any = { withWallet: {}, wakuconnect: null }) {
+  async initialize(options: any = { wakuconnect: null }) {
     await this.keyringController.load(this.db)
 
     if (options.withWallet) {
@@ -99,6 +102,13 @@ export class ParkyDB {
         options.withWeb3.defaultAddress,
         options.withWeb3.pubkeySig,
       )
+    } else {
+      this.messagingService = new MessagingService(
+        undefined,
+        '',
+        '',
+        '',
+      )
     }
 
     if (options.withAncon) {
@@ -115,7 +125,7 @@ export class ParkyDB {
         options.withIpfs.api,
       )
     }
-    options.withWallet.password = undefined
+    // options.withWallet.password = undefined
     // @ts-ignore
     return this.messagingService.bootstrap(options.wakuconnect)
   }

@@ -54,6 +54,7 @@ const payload = {
 test.beforeEach(async (t) => {
   const alice = new ParkyDB()
   await alice.initialize({
+    
     // Remember these values come from a CLI or UI, DO NOT hardcode when implementing
     withWallet: {
       autoLogin: true,

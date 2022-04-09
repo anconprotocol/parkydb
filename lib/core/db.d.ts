@@ -31,8 +31,8 @@ export declare class ParkyDB {
     put(key: CID, value: Block<any>): Promise<any>;
     createTopicPubsub(topic: string, options: ChannelOptions): Promise<import("../interfaces/PubsubTopic").PubsubTopic>;
     getWallet(): Promise<any>;
-    get ancon(): AnconService | undefined;
-    get ipfs(): IPFSService | undefined;
+    get ancon(): AnconService;
+    get ipfs(): IPFSService;
     createChannelPubsub(topic: string, options: ChannelOptions): Promise<import("..").ChannelTopic>;
     aggregate(topic: string[], options: ChannelOptions): Promise<import("..").ChannelTopic>;
     get(key: any, options?: any): Promise<any>;
