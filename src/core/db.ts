@@ -116,7 +116,8 @@ export class ParkyDB {
       )
     }
     options.withWallet.password = undefined
-    return this.messagingService?.bootstrap(options.wakuconnect)
+    // @ts-ignore
+    return this.messagingService.bootstrap(options.wakuconnect)
   }
 
   async putBlock(payload: any, options: any = {}) {
@@ -154,7 +155,8 @@ export class ParkyDB {
 
   async createTopicPubsub(topic: string, options: ChannelOptions) {
     // creates an observable and subscribes to store block creation
-    return this.messagingService?.createTopic(
+    // @ts-ignore
+    return this.messagingService.createTopic(
       topic,
       options,
       this.onBlockCreated,
@@ -184,7 +186,8 @@ export class ParkyDB {
 
     const sigkey = Buffer.from(h, 'hex')
     const pubkey = getPublicKey(sigkey)
-    return this.messagingService?.createChannel(
+    // @ts-ignore
+    return this.messagingService.createChannel(
       topic,
       { ...options, sigkey, pubkey },
       this.onBlockCreated,
@@ -203,7 +206,8 @@ export class ParkyDB {
 
     const sigkey = Buffer.from(h, 'hex')
     const pubkey = getPublicKey(sigkey)
-    return this.messagingService?.aggregate(topic, {
+    // @ts-ignore
+    return this.messagingService.aggregate(topic, {
       ...options,
       sigkey,
       pubkey,

@@ -20,7 +20,7 @@ export declare class ParkyDB {
     initialize(options?: any): Promise<{
         waku: import("js-waku").Waku;
         connected: void;
-    } | undefined>;
+    }>;
     putBlock(payload: any, options?: any): Promise<{
         id: string;
         model: any;
@@ -29,12 +29,12 @@ export declare class ParkyDB {
         model?: undefined;
     }>;
     put(key: CID, value: Block<any>): Promise<any>;
-    createTopicPubsub(topic: string, options: ChannelOptions): Promise<import("../interfaces/PubsubTopic").PubsubTopic | undefined>;
+    createTopicPubsub(topic: string, options: ChannelOptions): Promise<import("../interfaces/PubsubTopic").PubsubTopic>;
     getWallet(): Promise<any>;
     get ancon(): AnconService | undefined;
     get ipfs(): IPFSService | undefined;
-    createChannelPubsub(topic: string, options: ChannelOptions): Promise<import("..").ChannelTopic | undefined>;
-    aggregate(topic: string[], options: ChannelOptions): Promise<import("..").ChannelTopic | undefined>;
+    createChannelPubsub(topic: string, options: ChannelOptions): Promise<import("..").ChannelTopic>;
+    aggregate(topic: string[], options: ChannelOptions): Promise<import("..").ChannelTopic>;
     get(key: any, options?: any): Promise<any>;
     queryBlocks$(fn: (blocks: Table) => () => unknown): Promise<import("dexie").Observable<unknown>>;
     getBlocksByTableName$(tableName: string, fn: (table: Table) => () => unknown): Promise<import("dexie").Observable<unknown>>;
