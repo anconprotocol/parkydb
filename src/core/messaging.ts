@@ -172,7 +172,7 @@ export class MessagingService implements IMessaging {
         if (msg.contentTopic === topic)
           pubsub.next({ message: msg, decoded: message })
       },
-      [...topic],
+      [topic],
     )
 
     let onBlockReply$ = pubsub.asObservable()
