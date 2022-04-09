@@ -1,5 +1,4 @@
 const { Crypto } = require('@peculiar/webcrypto')
-
 const crypto = new Crypto()
 // @ts-ignore
 if (!global.window) {
@@ -15,13 +14,14 @@ import { ChannelTopic } from '../interfaces/ChannelTopic'
 import { PubsubTopic } from '../interfaces/PubsubTopic'
 import { ethers } from 'ethers'
 import * as sigUtil from '@metamask/eth-sig-util'
-import { encode, decode } from 'cbor-x'
 import {
   PacketPayload,
   PublicKeyMessage,
   SecurePacketPayload,
 } from '../interfaces/PublicKeyMessage'
 import { SignTypedDataVersion } from '@metamask/eth-sig-util'
+import { arrayify } from 'ethers/lib/utils'
+import { StorageBlock } from '../interfaces/StorageKind'
 
 export interface IMessaging {
   bootstrap(options: any): void
@@ -79,6 +79,40 @@ export class MessagingService implements IMessaging {
       method: 'eth_signTypedData_v4',
       params: [ownerAddressHex, msgParams],
       from: ownerAddressHex,
+    })
+  }
+
+  buildBlockDocument(topicDomainName: string, storageBlock: StorageBlock) {
+    return JSON.stringify({
+      domain: {
+        name: topicDomainName,
+        version: '1',
+      },
+      message: {
+        ...storageBlock,
+      },
+      primaryType: 'StorageBlock',
+      types: {
+        EIP712Domain: [
+          { name: 'name', type: 'string' },
+          { name: 'version', type: 'string' },
+        ],
+        StorageAsset: [
+          { name: 'name', type: 'string' },
+          { name: 'kind', type: 'string' },
+          { name: 'timestamp', type: 'number' },
+          { name: 'description', type: 'string' },
+          { name: 'image', type: 'string' },
+          { name: 'sources', type: 'string[]' },
+          { name: 'owner', type: 'string' },
+        ],
+        StorageBlock: [
+          { name: 'content', type: 'StorageAsset' },
+          { name: 'kind', type: 'string' },
+          { name: 'timestamp', type: 'string' },
+          { name: 'issuer', type: 'string' },
+        ],
+      },
     })
   }
 
@@ -140,7 +174,10 @@ export class MessagingService implements IMessaging {
     topic: string,
     options: ChannelOptions,
     blockPublisher: Subject<BlockValue>,
+    privateKey: string,
+    encPublicKey: string,
   ): Promise<PubsubTopic> {
+    this.waku.addDecryptionKey(privateKey)
     let pub: any = blockPublisher
     if (options.middleware && options.middleware.outgoing) {
       pub = blockPublisher.pipe(
@@ -170,11 +207,7 @@ export class MessagingService implements IMessaging {
           ) as SecurePacketPayload
         }
         if (msg.contentTopic === topic) {
-          const isValidMessage = this.validatePublicKeyMessage(
-            'elsegundo',
-            msg.publicKeyMessage,
-          )
-          pubsub.next({ message: msg, decoded: message, isValidMessage })
+          pubsub.next({ message: msg, decoded: message })
         }
       },
       [topic],
@@ -203,13 +236,13 @@ export class MessagingService implements IMessaging {
     const cancel = pub.subscribe(async (block: BlockValue) => {
       let message: any = { payload: block.document }
       if (this.pubkey && this.defaultAddress && this.web3Provider) {
-        // TODO: Use this later on with non tx reqs
-        const sig = await this.signEncryptionKey(
-          'elsegundo',
-          this.pubkey,
-          this.defaultAddress,
-          this.web3Provider.provider.send,
-        )
+        const msg = this.buildBlockDocument('elsegundo', block.document as any)
+
+        const sig = this.web3Provider.provider.send({
+          method: 'eth_signTypedData_v4',
+          params: [this.defaultAddress, msg],
+          from: this.defaultAddress,
+        })
         const pubkeyMessage = {
           signature: sig,
           ethAddress: this.defaultAddress,
@@ -217,12 +250,19 @@ export class MessagingService implements IMessaging {
         } as PublicKeyMessage
 
         message = {
-          payload: block.document,
+          payload: {
+            ...block.document,
+            signature: sig,
+          },
           publicKeyMessage: pubkeyMessage,
         } as SecurePacketPayload
       }
+
       const packed = await options.blockCodec.encode(message)
-      const msg = await WakuMessage.fromBytes(packed, topic)
+      const msg = await WakuMessage.fromBytes(packed, topic, {
+        encPublicKey: arrayify(encPublicKey),
+        // sigPrivKey: arrayify('0x' + privateKey),
+      })
       await this.waku.relay.send(msg)
     })
 

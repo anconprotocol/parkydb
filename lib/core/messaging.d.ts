@@ -5,6 +5,7 @@ import { BlockValue } from '../interfaces/Blockvalue';
 import { ChannelTopic } from '../interfaces/ChannelTopic';
 import { PubsubTopic } from '../interfaces/PubsubTopic';
 import { PublicKeyMessage } from '../interfaces/PublicKeyMessage';
+import { StorageBlock } from '../interfaces/StorageKind';
 export interface IMessaging {
     bootstrap(options: any): void;
 }
@@ -36,9 +37,10 @@ export declare class MessagingService implements IMessaging {
         from: string;
         params?: Array<any>;
     }) => Promise<any>): Promise<string>;
+    buildBlockDocument(topicDomainName: string, storageBlock: StorageBlock): string;
     buildMsgParams(topicDomainName: string, encryptionPublicKeyHex: string, ownerAddressHex: string): string;
     validatePublicKeyMessage(domainName: string, msg: PublicKeyMessage): boolean;
-    createTopic(topic: string, options: ChannelOptions, blockPublisher: Subject<BlockValue>): Promise<PubsubTopic>;
+    createTopic(topic: string, options: ChannelOptions, blockPublisher: Subject<BlockValue>, privateKey: string, encPublicKey: string): Promise<PubsubTopic>;
     createChannel(topic: string, options: ChannelOptions, blockPublisher: Subject<BlockValue>): Promise<ChannelTopic>;
     aggregate(topics: string[], options: ChannelOptions): Promise<ChannelTopic>;
 }

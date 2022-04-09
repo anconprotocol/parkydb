@@ -28,6 +28,7 @@ import { Simple } from '../wallet/simple'
 import { ethers } from 'ethers'
 import { AnconService } from './ancon'
 import { IPFSService } from './ipfs'
+import { hexlify } from 'ethers/lib/utils'
 const { MerkleJson } = require('merkle-json')
 
 /**
@@ -103,12 +104,7 @@ export class ParkyDB {
         options.withWeb3.defaultAddress,
       )
     } else {
-      this.messagingService = new MessagingService(
-        undefined,
-        '',
-        '',
-        '',
-      )
+      this.messagingService = new MessagingService(undefined, '', '', '')
     }
 
     if (options.withAncon) {
@@ -164,12 +160,23 @@ export class ParkyDB {
   }
 
   async createTopicPubsub(topic: string, options: ChannelOptions) {
+    const w = await this.getWallet()
+    const acct = await w.getAccounts()
+    const from = acct[0]
+
+    const privateKey = await w.exportAccount(from)
+
+    const sigkey = Buffer.from(privateKey, 'hex')
+    const pubkey = getPublicKey(sigkey)
+
     // creates an observable and subscribes to store block creation
     // @ts-ignore
     return this.messagingService.createTopic(
       topic,
       options,
       this.onBlockCreated,
+      privateKey,
+      hexlify(pubkey),
     )
   }
   async getWallet(): Promise<any> {
@@ -186,11 +193,8 @@ export class ParkyDB {
 
   async createChannelPubsub(topic: string, options: ChannelOptions) {
     const w = await this.getWallet()
-    let from = options.from
-    if (from === '') {
-      const acct = await w.getAccounts()
-      from = acct[0]
-    }
+    const acct = await w.getAccounts()
+    const from = acct[0]
 
     const h = await w.exportAccount(from)
 
