@@ -216,7 +216,7 @@ export class MessagingService implements IMessaging {
           publicKeyMessage: pubkeyMessage,
         } as SecurePacketPayload
       }
-      const packed = options.blockCodec.encode(message)
+      const packed = await options.blockCodec.encode(message)
       const msg = await WakuMessage.fromBytes(packed, topic)
       await this.waku.relay.send(msg)
     })
