@@ -99,8 +99,8 @@ export class ParkyDB {
       this.messagingService = new MessagingService(
         options.withWeb3.provider,
         options.withWeb3.pubkey,
-        options.withWeb3.defaultAddress,
         options.withWeb3.pubkeySig,
+        options.withWeb3.defaultAddress,
       )
     } else {
       this.messagingService = new MessagingService(

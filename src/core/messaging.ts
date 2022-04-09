@@ -169,8 +169,13 @@ export class MessagingService implements IMessaging {
             msg.payload,
           ) as SecurePacketPayload
         }
-        if (msg.contentTopic === topic)
-          pubsub.next({ message: msg, decoded: message })
+        if (msg.contentTopic === topic) {
+          const isValidMessage = this.validatePublicKeyMessage(
+            'elsegundo',
+            msg.publicKeyMessage,
+          )
+          pubsub.next({ message: msg, decoded: message, isValidMessage })
+        }
       },
       [topic],
     )
@@ -199,14 +204,14 @@ export class MessagingService implements IMessaging {
       let message: any = { payload: block.document }
       if (this.pubkey && this.defaultAddress && this.web3Provider) {
         // TODO: Use this later on with non tx reqs
-        // const sig = await this.signEncryptionKey(
-        //   topic.split('/')[2],
-        //   this.pubkey,
-        //   this.defaultAddress,
-        //   this.web3Provider.provider.request,
-        // )
+        const sig = await this.signEncryptionKey(
+          'elsegundo',
+          this.pubkey,
+          this.defaultAddress,
+          this.web3Provider.provider.send,
+        )
         const pubkeyMessage = {
-          signature: this.pubkeySig,
+          signature: sig,
           ethAddress: this.defaultAddress,
           encryptionPublicKey: this.pubkey,
         } as PublicKeyMessage
