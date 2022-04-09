@@ -26,6 +26,8 @@ import { getPublicKey } from 'js-waku'
 import { Ed25519 } from '../wallet/ed25519keyring'
 import { Simple } from '../wallet/simple'
 import { ethers } from 'ethers'
+import { AnconService } from './ancon'
+import { IPFSService } from './ipfs'
 const { MerkleJson } = require('merkle-json')
 
 /**
@@ -36,12 +38,12 @@ export class ParkyDB {
   private dagService = new DAGJsonService()
   private graphqlService = new GraphqlService()
   private jsonschemaService = new JsonSchemaService()
-
   private hooks = new Hooks()
   private onBlockCreated = new Subject<BlockValue>()
+  private anconService: AnconService | undefined
+  private messagingService: MessagingService | undefined
+  private ipfsService: IPFSService | undefined
   db: any
-  private messagingService: MessagingService
-
   constructor() {
     const db: Dexie | any = new Dexie(
       'ancon',
@@ -62,6 +64,7 @@ export class ParkyDB {
         uuid,
         topic,
         kind,
+        document.kind,
         timestamp`,
     })
 
@@ -70,10 +73,9 @@ export class ParkyDB {
       'creating',
       this.hooks.attachRouter(this.onBlockCreated),
     )
-    this.messagingService = new MessagingService(undefined, '', '', '')
   }
 
-  async initialize(options: any = { wakuconnect: null }) {
+  async initialize(options: any = { withWallet: {}, wakuconnect: null }) {
     await this.keyringController.load(this.db)
 
     if (options.withWallet) {
@@ -99,8 +101,22 @@ export class ParkyDB {
       )
     }
 
+    if (options.withAncon) {
+      this.anconService = new AnconService(
+        options.withAncon.walletconnectProvider,
+        options.withAncon.pubkey,
+        options.withAncon.api,
+      )
+    }
+
+    if (options.withIpfs) {
+      this.ipfsService = new IPFSService(
+        options.withIpfs.gateway,
+        options.withIpfs.api,
+      )
+    }
     options.withWallet.password = undefined
-    return this.messagingService.bootstrap(options.wakuconnect)
+    return this.messagingService?.bootstrap(options.wakuconnect)
   }
 
   async putBlock(payload: any, options: any = {}) {
@@ -136,13 +152,24 @@ export class ParkyDB {
     })
   }
 
-  async createTopicPubsub(topic: string) {
+  async createTopicPubsub(topic: string, options: ChannelOptions) {
     // creates an observable and subscribes to store block creation
-    return this.messagingService.createTopic(topic, this.onBlockCreated)
+    return this.messagingService?.createTopic(
+      topic,
+      options,
+      this.onBlockCreated,
+    )
   }
   async getWallet(): Promise<any> {
     // await this.keyringController.load(this.db)
     return this.keyringController.keyringController
+  }
+
+  get ancon() {
+    return this.anconService
+  }
+  get ipfs() {
+    return this.ipfsService
   }
 
   async createChannelPubsub(topic: string, options: ChannelOptions) {
@@ -157,109 +184,11 @@ export class ParkyDB {
 
     const sigkey = Buffer.from(h, 'hex')
     const pubkey = getPublicKey(sigkey)
-    return this.messagingService.createChannel(
+    return this.messagingService?.createChannel(
       topic,
       { ...options, sigkey, pubkey },
       this.onBlockCreated,
     )
-  }
-
-  async createAnconDid(options: {
-    api: string
-    chainId: string
-    from: string
-  }) {
-    const w = await this.getWallet()
-    let from = options.from
-    if (from === '') {
-      const acct = await w.getAccounts()
-      from = acct[0]
-    }
-    const h = await w.exportAccount(from)
-    const sigkey = Buffer.from(h, 'hex')
-    const pubkey = getPublicKey(sigkey)
-    // encode the pub key
-    const base58Encode = ethers.utils.base58.encode(pubkey)
-
-    const message = `#Welcome to Ancon Protocol!
-
-    For more information read the docs https://anconprotocol.github.io/docs/
-
-    To make free posts and gets to the DAG Store you have to enroll and pay the service fee
-
-    This request will not trigger a blockchain transaction or cost any gas fees.
-    by signing this message you accept the terms and conditions of Ancon Protocol
-    `
-    const signature = await w.signPersonalMessage({
-      from,
-      data: ethers.utils.hashMessage(message),
-    })
-
-    //post to get the did
-    const payload = {
-      ethrdid: `did:ethr:${options.chainId}:${from}`,
-      pub: base58Encode,
-      signature: signature,
-      message: message,
-    }
-
-    const requestOptions = {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    }
-
-    // fetch
-    const rawResponse = await fetch(
-      // @ts-ignore
-      `${api}/v0/did`,
-      requestOptions,
-    )
-    //   json response
-    return rawResponse.json()
-  }
-
-  async createAnconBlock(options: {
-    api: string
-    topic: string
-    chainId: string
-    from: string
-    message: string
-  }) {
-    const w = await this.getWallet()
-    let from = options.from
-    if (from === '') {
-      const acct = await w.getAccounts()
-      from = acct[0]
-    }
-
-    const signature = await w.signPersonalMessage({
-      from,
-      data: ethers.utils.hashMessage(options.message),
-    })
-
-    const payload = {
-      path: '/',
-      from: `did:ethr:${options.chainId}:${from}`,
-      signature,
-      topic: options.topic,
-      data: options.message,
-    }
-
-    const requestOptions = {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    }
-
-    // fetch
-    const rawResponse = await fetch(
-      // @ts-ignore
-      `${api}/v0/dag`,
-      requestOptions,
-    )
-    //   json response
-    return rawResponse.json()
   }
 
   async aggregate(topic: string[], options: ChannelOptions) {
@@ -274,7 +203,7 @@ export class ParkyDB {
 
     const sigkey = Buffer.from(h, 'hex')
     const pubkey = getPublicKey(sigkey)
-    return this.messagingService.aggregate(topic, {
+    return this.messagingService?.aggregate(topic, {
       ...options,
       sigkey,
       pubkey,
@@ -305,7 +234,10 @@ export class ParkyDB {
    * @param options
    * @returns
    */
-  async getBlocksByTableName$(tableName: string, fn: (table: Table) => () => unknown) {
+  async getBlocksByTableName$(
+    tableName: string,
+    fn: (table: Table) => () => unknown,
+  ) {
     return liveQuery(fn(this.db[tableName]))
   }
 

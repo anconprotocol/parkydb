@@ -5,7 +5,7 @@ const crypto = new Crypto()
 if (!global.window) {
   global.crypto = crypto
 }
-import {  Waku, WakuMessage } from 'js-waku'
+import { Waku, WakuMessage } from 'js-waku'
 import { Codec } from 'multiformats/bases/base'
 import { BlockCodec, ByteView } from 'multiformats/codecs/interface'
 import { map, Observable, Subject, tap } from 'rxjs'
@@ -28,9 +28,10 @@ export interface IMessaging {
 }
 
 export interface ChannelOptions {
-  from: string
+  from?: string
   sigkey?: Uint8Array
   pubkey?: Uint8Array
+  useAsAggregator?: boolean
   blockCodec: BlockCodec<any, unknown>
   middleware: {
     incoming: Array<(a: Observable<any>) => Observable<unknown>>
@@ -55,7 +56,7 @@ export class MessagingService implements IMessaging {
     const config = options || { bootstrap: { default: true } }
     this.waku = await Waku.create(config)
     const available = await this.waku.waitForRemotePeer()
-    return { waku: this.waku, connected: available};
+    return { waku: this.waku, connected: available }
   }
 
   async signEncryptionKey(
@@ -125,34 +126,76 @@ export class MessagingService implements IMessaging {
       version: SignTypedDataVersion.V4,
     })
 
-    return(recovered === msg.ethAddress)
+    return recovered === msg.ethAddress
   }
 
   /**
    * Creates a pubsub topic. Note topic format must be IPLD dag-json or dag-cbor
    * @param topic
+   * @param options
    * @param blockPublisher
    * @returns
    */
   async createTopic(
     topic: string,
+    options: ChannelOptions,
     blockPublisher: Subject<BlockValue>,
   ): Promise<PubsubTopic> {
+    let pub: any = blockPublisher
+    if (options.middleware && options.middleware.outgoing) {
+      pub = blockPublisher.pipe(
+        tap(),
+        tap(),
+        tap(),
+        tap(),
+        tap(),
+        tap(),
+        tap(),
+        tap(),
+        tap(),
+        tap(),
+        tap(),
+        ...options.middleware.outgoing,
+      )
+    }
+
     // Topic subscriber observes for DAG blocks (IPLD as bytes)
-    const pubsub = new Subject<any>()
+    let pubsub = new Subject<any>()
     this.waku.relay.addObserver(
       (msg: any) => {
-        let message = decode(msg.payload) as PacketPayload
+        let message = options.blockCodec.decode(msg.payload) as PacketPayload
         if (this.pubkey && this.defaultAddress && this.web3Provider) {
-          message = decode(msg.payload) as SecurePacketPayload
+          message = options.blockCodec.decode(
+            msg.payload,
+          ) as SecurePacketPayload
         }
-        pubsub.next(message)
+        if (msg.contentTopic === topic)
+          pubsub.next({ message: msg, decoded: message })
       },
-      [topic],
+      [...topic],
     )
 
+    let onBlockReply$ = pubsub.asObservable()
+    if (options.middleware && options.middleware.incoming) {
+      onBlockReply$ = pubsub
+        .asObservable()
+        .pipe(
+          tap(),
+          tap(),
+          tap(),
+          tap(),
+          tap(),
+          tap(),
+          tap(),
+          tap(),
+          tap(),
+          tap(),
+          ...options.middleware.incoming,
+        )
+    }
+
     // Topic publisher observes for block publisher and sends these blocks with Waku P2P
-    const cancel = blockPublisher.subscribe(async (block: BlockValue) => {
+    const cancel = pub.subscribe(async (block: BlockValue) => {
       let message: any = { payload: block.document }
       if (this.pubkey && this.defaultAddress && this.web3Provider) {
         // TODO: Use this later on with non tx reqs
@@ -173,13 +216,13 @@ export class MessagingService implements IMessaging {
           publicKeyMessage: pubkeyMessage,
         } as SecurePacketPayload
       }
-      const packed = encode(message)
+      const packed = options.blockCodec.encode(message)
       const msg = await WakuMessage.fromBytes(packed, topic)
       await this.waku.relay.send(msg)
     })
 
     return {
-      onBlockReply$: pubsub.asObservable(),
+      onBlockReply$,
       // on demand publishing DEPRECATE later
       publish: async (block: BlockValue) => {
         const msg = await WakuMessage.fromBytes(block.dag.bytes, topic)
@@ -235,7 +278,7 @@ export class MessagingService implements IMessaging {
       .subscribe(async (block: any) => {
         const view = await options.blockCodec.encode(block)
         const msg = await WakuMessage.fromBytes(view, topic, {
-        //  encPublicKey: options.pubkey,
+          //  encPublicKey: options.pubkey,
           // sigPrivKey: options.sigkey,
         })
         await this.waku.relay.send(msg)

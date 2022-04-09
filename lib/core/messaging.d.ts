@@ -9,9 +9,10 @@ export interface IMessaging {
     bootstrap(options: any): void;
 }
 export interface ChannelOptions {
-    from: string;
+    from?: string;
     sigkey?: Uint8Array;
     pubkey?: Uint8Array;
+    useAsAggregator?: boolean;
     blockCodec: BlockCodec<any, unknown>;
     middleware: {
         incoming: Array<(a: Observable<any>) => Observable<unknown>>;
@@ -37,7 +38,7 @@ export declare class MessagingService implements IMessaging {
     }) => Promise<any>): Promise<string>;
     buildMsgParams(topicDomainName: string, encryptionPublicKeyHex: string, ownerAddressHex: string): string;
     validatePublicKeyMessage(domainName: string, msg: PublicKeyMessage): boolean;
-    createTopic(topic: string, blockPublisher: Subject<BlockValue>): Promise<PubsubTopic>;
+    createTopic(topic: string, options: ChannelOptions, blockPublisher: Subject<BlockValue>): Promise<PubsubTopic>;
     createChannel(topic: string, options: ChannelOptions, blockPublisher: Subject<BlockValue>): Promise<ChannelTopic>;
     aggregate(topics: string[], options: ChannelOptions): Promise<ChannelTopic>;
 }

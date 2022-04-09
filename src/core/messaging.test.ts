@@ -115,14 +115,33 @@ test('create topic', async (t) => {
   t.is(accounts.length, 1)
   const accountB = accounts[1]
 
+  const blockCodec = {
+    name: 'cbor',
+    code: '0x71',
+    encode: (obj: any) => encode(obj),
+    decode: (buffer: any) => decode(buffer),
+  }
   const topic = `/anconprotocol/1/marketplace/ipld-dag-json`
-  const pubsubAlice = await alice.createTopicPubsub(topic)
-  pubsubAlice.onBlockReply$.subscribe(async (block: WakuMessage) => {
+  const pubsubAlice = await alice.createTopicPubsub(topic,{
+    middleware: {
+      incoming: [tap()],
+      outgoing: [map((v: BlockValue) => v.document)],
+    },
+    blockCodec,
+  })
+  pubsubAlice?.onBlockReply$.subscribe(async (block: WakuMessage) => {
     // match topic
     t.is(topic, JSON.parse(block.payloadAsUtf8).topic)
   })
-  const pubsubBob = await bob.createTopicPubsub(topic)
-  pubsubBob.onBlockReply$.subscribe(async (block: WakuMessage) => {
+  
+  const pubsubBob = await bob.createTopicPubsub(topic, {
+    middleware: {
+      incoming: [tap()],
+      outgoing: [map((v: BlockValue) => v.document)],
+    },
+    blockCodec,
+  })
+  pubsubBob?.onBlockReply$.subscribe(async (block: WakuMessage) => {
     // match topic
     t.is(topic, JSON.parse(block.payloadAsUtf8).topic)
     await bob.putBlock(payload, { topic })
@@ -134,7 +153,6 @@ test('create topic', async (t) => {
 
 test('create channel topic', async (t) => {
   const { alice, bob }: { alice: ParkyDB; bob: ParkyDB } = t.context as any
-
 
   // @ts-ignore
   const aw = await alice.getWallet()
@@ -173,7 +191,7 @@ test('create channel topic', async (t) => {
     },
     blockCodec,
   })
-  pubsubAlice.onBlockReply$.subscribe(async (block: WakuMessage) => {
+  pubsubAlice?.onBlockReply$.subscribe(async (block: WakuMessage) => {
     // match topic
     t.is(topic, JSON.parse(block.payloadAsUtf8).topic)
   })
@@ -185,7 +203,7 @@ test('create channel topic', async (t) => {
     },
     blockCodec,
   })
-  pubsubBob.onBlockReply$.subscribe(async (block: WakuMessage) => {
+  pubsubBob?.onBlockReply$.subscribe(async (block: WakuMessage) => {
     // match topic
     t.is(topic, JSON.parse(block.payloadAsUtf8).topic)
     await bob.putBlock(payload, { topic })
