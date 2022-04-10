@@ -240,12 +240,12 @@ export class MessagingService implements IMessaging {
 
     if (options.canPublish) {
       // @ts-ignore
-      cancel = pub$.subscribe(async (block: BlockValue) => {
-        let message: any = { payload: block.document }
+      cancel = pub$.subscribe(async (block: any) => {
+        let message: any = { payload: block }
         if (this.pubkey && this.defaultAddress && this.web3Provider) {
           const msg = this.buildBlockDocument(
             'data.universal',
-            block.document as any,
+            block as any,
           )
 
           const sig = await this.web3Provider.provider.send({
@@ -261,7 +261,7 @@ export class MessagingService implements IMessaging {
 
           message = {
             payload: {
-              ...block.document,
+              ...block,
               signature: sig,
             },
             publicKeyMessage: pubkeyMessage,
