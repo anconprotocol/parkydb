@@ -181,7 +181,6 @@ export class ParkyDB {
     return this.messagingService.createTopic(
       topic,
       options,
-      this.onBlockCreated,
       privateKey,
       hexlify(pubkey),
     )

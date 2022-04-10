@@ -174,14 +174,14 @@ export class MessagingService implements IMessaging {
   async createTopic(
     topic: string,
     options: ChannelOptions,
-    blockPublisher: Subject<BlockValue>,
     privateKey: string,
     encPublicKey: string,
   ): Promise<PubsubTopic> {
     this.waku.addDecryptionKey(privateKey)
-    let pub: any = blockPublisher
+    let pub = new Subject<BlockValue>()
+    let pub$
     if (options.middleware && options.middleware.outgoing) {
-      pub = blockPublisher.pipe(
+      pub$ = pub.pipe(
         tap(),
         tap(),
         tap(),
@@ -239,8 +239,9 @@ export class MessagingService implements IMessaging {
     let cancel: { unsubscribe: () => void }
 
     if (options.canPublish) {
-      cancel = pub.subscribe(async (block: BlockValue) => {
-        if (block.topic !== topic) return;
+      // @ts-ignore
+      cancel = pub$.subscribe(async (block: BlockValue) => {
+        if (block.topic !== topic) return
         let message: any = { payload: block.document }
         if (this.pubkey && this.defaultAddress && this.web3Provider) {
           const msg = this.buildBlockDocument(
@@ -278,11 +279,7 @@ export class MessagingService implements IMessaging {
     }
     return {
       onBlockReply$,
-      // on demand publishing DEPRECATE later
-      publish: async (block: BlockValue) => {
-        const msg = await WakuMessage.fromBytes(block.dag.bytes, topic)
-        return this.waku.relay.send(msg)
-      },
+      publish: (block: any) => pub.next(block),
       close: () => {
         if (cancel) {
           cancel.unsubscribe()
