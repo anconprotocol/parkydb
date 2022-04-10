@@ -15,6 +15,7 @@ export interface ChannelOptions {
     sigkey?: Uint8Array;
     pubkey?: Uint8Array;
     canPublish?: boolean;
+    isKeyExchangeChannel?: boolean;
     canSubscribe?: boolean;
     blockCodec: BlockCodec<any, unknown>;
     middleware: {

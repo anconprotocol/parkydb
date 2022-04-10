@@ -33,6 +33,7 @@ export interface ChannelOptions {
   sigkey?: Uint8Array
   pubkey?: Uint8Array
   canPublish?: boolean
+  isKeyExchangeChannel?: boolean
   canSubscribe?: boolean
   blockCodec: BlockCodec<any, unknown>
   middleware: {
@@ -178,7 +179,9 @@ export class MessagingService implements IMessaging {
     privateKey: string,
     encPublicKey: string,
   ): Promise<PubsubTopic> {
-    this.waku.addDecryptionKey(privateKey)
+    if (options.isKeyExchangeChannel) {
+      this.waku.addDecryptionKey(privateKey)
+    }
     let pub = new Subject<any>()
     let pub$ = pub.pipe()
     if (options.middleware && options.middleware.outgoing) {
@@ -244,10 +247,7 @@ export class MessagingService implements IMessaging {
       cancel = pub$.subscribe(async (block: any) => {
         let message: any = { payload: block }
         if (this.pubkey && this.defaultAddress && this.web3Provider) {
-          const msg = this.buildBlockDocument(
-            'data.universal',
-            block as any,
-          )
+          const msg = this.buildBlockDocument('data.universal', block as any)
 
           const sig = await this.web3Provider.provider.send({
             method: 'eth_signTypedData_v4',
@@ -270,10 +270,13 @@ export class MessagingService implements IMessaging {
         }
 
         const packed = await options.blockCodec.encode(message)
-        const msg = await WakuMessage.fromBytes(packed, topic, {
+        let config: any = {
           encPublicKey: arrayify(encPublicKey),
-          // sigPrivKey: arrayify('0x' + privateKey),
-        })
+        }
+        if (options.isKeyExchangeChannel) {
+          config = {}
+        }
+        const msg = await WakuMessage.fromBytes(packed, topic, config)
         await this.waku.relay.send(msg)
       })
     }
