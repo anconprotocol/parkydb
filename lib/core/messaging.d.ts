@@ -13,7 +13,8 @@ export interface ChannelOptions {
     from?: string;
     sigkey?: Uint8Array;
     pubkey?: Uint8Array;
-    useAsAggregator?: boolean;
+    canPublish?: boolean;
+    canSubscribe?: boolean;
     blockCodec: BlockCodec<any, unknown>;
     middleware: {
         incoming: Array<(a: Observable<any>) => Observable<unknown>>;

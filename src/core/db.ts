@@ -169,6 +169,13 @@ export class ParkyDB {
     const sigkey = Buffer.from(privateKey, 'hex')
     const pubkey = getPublicKey(sigkey)
 
+    if (options.canPublish === null) {
+      options.canPublish = true
+    }
+    if (options.canSubscribe === null) {
+      options.canSubscribe = true
+    }
+
     // creates an observable and subscribes to store block creation
     // @ts-ignore
     return this.messagingService.createTopic(

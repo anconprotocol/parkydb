@@ -31,7 +31,8 @@ export interface ChannelOptions {
   from?: string
   sigkey?: Uint8Array
   pubkey?: Uint8Array
-  useAsAggregator?: boolean
+  canPublish?: boolean
+  canSubscribe?: boolean
   blockCodec: BlockCodec<any, unknown>
   middleware: {
     incoming: Array<(a: Observable<any>) => Observable<unknown>>
@@ -198,20 +199,22 @@ export class MessagingService implements IMessaging {
 
     // Topic subscriber observes for DAG blocks (IPLD as bytes)
     let pubsub = new Subject<any>()
-    this.waku.relay.addObserver(
-      (msg: any) => {
-        let message = options.blockCodec.decode(msg.payload) as PacketPayload
-        if (this.pubkey && this.defaultAddress && this.web3Provider) {
-          message = options.blockCodec.decode(
-            msg.payload,
-          ) as SecurePacketPayload
-        }
-        if (msg.contentTopic === topic) {
-          pubsub.next({ message: msg, decoded: message })
-        }
-      },
-      [topic],
-    )
+    if (options.canSubscribe) {
+      this.waku.relay.addObserver(
+        (msg: any) => {
+          let message = options.blockCodec.decode(msg.payload) as PacketPayload
+          if (this.pubkey && this.defaultAddress && this.web3Provider) {
+            message = options.blockCodec.decode(
+              msg.payload,
+            ) as SecurePacketPayload
+          }
+          if (msg.contentTopic === topic) {
+            pubsub.next({ message: msg, decoded: message })
+          }
+        },
+        [topic],
+      )
+    }
 
     let onBlockReply$ = pubsub.asObservable()
     if (options.middleware && options.middleware.incoming) {
@@ -233,39 +236,46 @@ export class MessagingService implements IMessaging {
     }
 
     // Topic publisher observes for block publisher and sends these blocks with Waku P2P
-    const cancel = pub.subscribe(async (block: BlockValue) => {
-      let message: any = { payload: block.document }
-      if (this.pubkey && this.defaultAddress && this.web3Provider) {
-        const msg = this.buildBlockDocument('elsegundo', block.document as any)
+    let cancel: { unsubscribe: () => void }
 
-        const sig = this.web3Provider.provider.send({
-          method: 'eth_signTypedData_v4',
-          params: [this.defaultAddress, msg],
-          from: this.defaultAddress,
-        })
-        const pubkeyMessage = {
-          signature: sig,
-          ethAddress: this.defaultAddress,
-          encryptionPublicKey: this.pubkey,
-        } as PublicKeyMessage
+    if (options.canPublish) {
+      cancel = pub.subscribe(async (block: BlockValue) => {
+        if (block.topic !== topic) return;
+        let message: any = { payload: block.document }
+        if (this.pubkey && this.defaultAddress && this.web3Provider) {
+          const msg = this.buildBlockDocument(
+            'data.universal',
+            block.document as any,
+          )
 
-        message = {
-          payload: {
-            ...block.document,
+          const sig = await this.web3Provider.provider.send({
+            method: 'eth_signTypedData_v4',
+            params: [this.defaultAddress, msg],
+            from: this.defaultAddress,
+          })
+          const pubkeyMessage = {
             signature: sig,
-          },
-          publicKeyMessage: pubkeyMessage,
-        } as SecurePacketPayload
-      }
+            ethAddress: this.defaultAddress,
+            encryptionPublicKey: this.pubkey,
+          } as PublicKeyMessage
 
-      const packed = await options.blockCodec.encode(message)
-      const msg = await WakuMessage.fromBytes(packed, topic, {
-        encPublicKey: arrayify(encPublicKey),
-        // sigPrivKey: arrayify('0x' + privateKey),
+          message = {
+            payload: {
+              ...block.document,
+              signature: sig,
+            },
+            publicKeyMessage: pubkeyMessage,
+          } as SecurePacketPayload
+        }
+
+        const packed = await options.blockCodec.encode(message)
+        const msg = await WakuMessage.fromBytes(packed, topic, {
+          encPublicKey: arrayify(encPublicKey),
+          // sigPrivKey: arrayify('0x' + privateKey),
+        })
+        await this.waku.relay.send(msg)
       })
-      await this.waku.relay.send(msg)
-    })
-
+    }
     return {
       onBlockReply$,
       // on demand publishing DEPRECATE later
