@@ -28,6 +28,7 @@ export interface IMessaging {
 }
 
 export interface ChannelOptions {
+  encryptionPubKey?: string
   from?: string
   sigkey?: Uint8Array
   pubkey?: Uint8Array

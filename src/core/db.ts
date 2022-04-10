@@ -182,7 +182,7 @@ export class ParkyDB {
       topic,
       options,
       privateKey,
-      hexlify(pubkey),
+      options.encryptionPubKey || hexlify(pubkey),
     )
   }
   async getWallet(): Promise<any> {
