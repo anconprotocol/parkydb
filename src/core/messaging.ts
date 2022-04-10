@@ -241,7 +241,6 @@ export class MessagingService implements IMessaging {
     if (options.canPublish) {
       // @ts-ignore
       cancel = pub$.subscribe(async (block: BlockValue) => {
-        if (block.topic !== topic) return
         let message: any = { payload: block.document }
         if (this.pubkey && this.defaultAddress && this.web3Provider) {
           const msg = this.buildBlockDocument(
