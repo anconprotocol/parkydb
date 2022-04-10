@@ -178,8 +178,8 @@ export class MessagingService implements IMessaging {
     encPublicKey: string,
   ): Promise<PubsubTopic> {
     this.waku.addDecryptionKey(privateKey)
-    let pub = new Subject<BlockValue>()
-    let pub$
+    let pub = new Subject<any>()
+    let pub$ = pub.pipe()
     if (options.middleware && options.middleware.outgoing) {
       pub$ = pub.pipe(
         tap(),
