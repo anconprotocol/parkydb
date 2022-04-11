@@ -191,6 +191,7 @@ export class ParkyDB {
     pubsub.publish({
       encryptionPublicKey: hexlify(pub),
     } as any)    
+    pubsub.close()
     // TODO: Store in datastore or encrypted
     options.canDecrypt = true
     options.sigkey = pk as any
@@ -212,6 +213,7 @@ export class ParkyDB {
       options.canDecrypt = false
       options.canSubscribe = false
       options.encryptionPubKey = decoded.payload.encryptionPubKey
+      pubsub.close()
       return {
         pubsub: this.messagingService.createTopic(topic, options),
       }
