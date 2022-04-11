@@ -179,8 +179,7 @@ export class ParkyDB {
     return this.messagingService.createTopic(
       topic,
       options,
-      options.sigkey as any,
-      options.encryptionPubKey as any,
+
     )
   }
   async getWallet(): Promise<any> {

@@ -44,7 +44,7 @@ export declare class MessagingService implements IMessaging {
     buildBlockDocument(topicDomainName: string, storageBlock: StorageBlock): string;
     buildMsgParams(topicDomainName: string, encryptionPublicKeyHex: string, ownerAddressHex: string): string;
     validatePublicKeyMessage(domainName: string, msg: PublicKeyMessage): boolean;
-    createTopic(topic: string, options: ChannelOptions, privateKey: string, encPublicKey: string): Promise<PubsubTopic>;
+    createTopic(topic: string, options: ChannelOptions): Promise<PubsubTopic>;
     createChannel(topic: string, options: ChannelOptions, blockPublisher: Subject<BlockValue>): Promise<ChannelTopic>;
     aggregate(topics: string[], options: ChannelOptions): Promise<ChannelTopic>;
 }

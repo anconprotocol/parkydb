@@ -177,11 +177,9 @@ export class MessagingService implements IMessaging {
   async createTopic(
     topic: string,
     options: ChannelOptions,
-    privateKey: string,
-    encPublicKey: string,
   ): Promise<PubsubTopic> {
     if (options.canDecrypt) {
-      this.waku.addDecryptionKey(privateKey)
+      this.waku.addDecryptionKey(options.sigkey as any)
     }
     let pub = new Subject<any>()
     let pub$ = pub.pipe()
