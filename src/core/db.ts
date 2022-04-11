@@ -19,7 +19,7 @@ import { JsonSchemaService } from './jsonschema'
 import { ServiceContext } from '../interfaces/ServiceContext'
 import { ChannelOptions, MessagingService } from './messaging'
 import { Hooks } from './hooks'
-import { async, lastValueFrom, map, Subject } from 'rxjs'
+import { async, lastValueFrom, map, Observable, Subject } from 'rxjs'
 import { BlockValue } from '../interfaces/Blockvalue'
 import { WalletController } from '../wallet/controller'
 import { generatePrivateKey, getPublicKey } from 'js-waku'
@@ -178,10 +178,7 @@ export class ParkyDB {
     return this.messagingService.createTopic(topic, options)
   }
 
-  async emitKeyExchangePublicKey(
-    topic: string,
-    options: ChannelOptions,
-  ): Promise<any> {
+  async emitKeyExchangePublicKey(topic: string, options: ChannelOptions) {
     const pk = generatePrivateKey()
     const pub = getPublicKey(pk)
 
@@ -189,40 +186,36 @@ export class ParkyDB {
     options.canSubscribe = true
     options.isKeyExchangeChannel = true
     const pubsub = await this.messagingService.createTopic(topic, options)
-    const obs = pubsub.onBlockReply$.pipe(
-      map(() => {
-        pubsub.publish({
-          encryptionPublicKey: hexlify(pub),
-        } as any)
-        pubsub.close()
-        // TODO: Store in datastore or encrypted
-        options.canDecrypt = true
-        options.encryptionPubKey = pub as any
-        return options
+    return pubsub.onBlockReply$.pipe(
+      map((req) => {
+        if (req.askForEncryptionKey) {
+          pubsub.publish({
+            encryptionPublicKey: hexlify(pub),
+          } as any)
+          // TODO: Store in datastore or encrypted
+          options.canDecrypt = true
+          options.encryptionPubKey = pub as any
+          return options
+        }
       }),
     )
-
-    return lastValueFrom(obs)
   }
 
-  async subscribeKeyExchangePublicKey(
+  async requestKeyExchangePublicKey(
     topic: string,
     options: ChannelOptions,
   ): Promise<any> {
-    try {
-      options.canSubscribe = true
-      options.isKeyExchangeChannel = true
-      const pubsub = await this.messagingService.createTopic(topic, options)
-      pubsub.publish({ askForEncryptionKey: true } as any)
-      const config  = await lastValueFrom(pubsub.onBlockReply$)
-      options.canDecrypt = options.canDecrypt
-      options.encryptionPubKey = options.encryptionPubKey
-      pubsub.close()
-      
-      return config
-    } catch (ex) {
-      return null
-    }
+    options.canPublish = true
+    options.canSubscribe = true
+    options.isKeyExchangeChannel = true
+    const pubsub = await this.messagingService.createTopic(topic, options)
+    pubsub.publish({ askForEncryptionKey: true } as any)
+
+    return pubsub.onBlockReply$.pipe(
+      map((res: any) => {
+        return res.encryptionPubKey
+      }),
+    )
   }
 
   async getWallet(): Promise<any> {
