@@ -188,7 +188,7 @@ export class ParkyDB {
     const pubsub = await this.messagingService.createTopic(topic, options)
     return pubsub.onBlockReply$.pipe(
       map((req) => {
-        if (req.askForEncryptionKey) {
+        if (req.decoded.payload.askForEncryptionKey) {
           pubsub.publish({
             encryptionPublicKey: hexlify(pub),
           } as any)
@@ -213,7 +213,7 @@ export class ParkyDB {
 
     return pubsub.onBlockReply$.pipe(
       map((res: any) => {
-        return res.encryptionPublicKey
+        return res.decoded.payload.encryptionPublicKey
       }),
     )
   }
