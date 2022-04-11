@@ -22,7 +22,7 @@ import { Hooks } from './hooks'
 import { Subject } from 'rxjs'
 import { BlockValue } from '../interfaces/Blockvalue'
 import { WalletController } from '../wallet/controller'
-import { getPublicKey } from 'js-waku'
+import { generatePrivateKey, getPublicKey } from 'js-waku'
 import { Ed25519 } from '../wallet/ed25519keyring'
 import { Simple } from '../wallet/simple'
 import { ethers } from 'ethers'
@@ -159,15 +159,19 @@ export class ParkyDB {
     })
   }
 
+  /**
+   * Create topic handles any topic configuration. Uses ephimeral encryption keys.
+   * @param topic
+   * @param options
+   * @returns
+   */
   async createTopicPubsub(topic: string, options: ChannelOptions) {
-    const w = await this.getWallet()
-    const acct = await w.getAccounts()
-    const from = acct[0]
+    //    const w = await this.getWallet()
+    //    const acct = await w.getAccounts()
+    //    const from = acct[0]
 
-    const privateKey = await w.exportAccount(from)
-
-    const sigkey = Buffer.from(privateKey, 'hex')
-    const pubkey = getPublicKey(sigkey)
+    const privateKey = generatePrivateKey()
+    const pubkey = getPublicKey(privateKey)
 
     if (options.canPublish === null) {
       options.canPublish = true
@@ -181,7 +185,7 @@ export class ParkyDB {
     return this.messagingService.createTopic(
       topic,
       options,
-      privateKey,
+      options.sigkey || hexlify(privateKey),
       options.encryptionPubKey || hexlify(pubkey),
     )
   }
@@ -197,6 +201,12 @@ export class ParkyDB {
     return this.ipfsService
   }
 
+  /**
+   * @deprecated Use createTopicPubsub.
+   * @param topic
+   * @param options
+   * @returns
+   */
   async createChannelPubsub(topic: string, options: ChannelOptions) {
     const w = await this.getWallet()
     const acct = await w.getAccounts()
@@ -209,11 +219,17 @@ export class ParkyDB {
     // @ts-ignore
     return this.messagingService.createChannel(
       topic,
-      { ...options, sigkey, pubkey },
+      { ...options, sigkey: h, encryptionPubKey: hexlify(pubkey) },
       this.onBlockCreated,
     )
   }
 
+  /**
+   * @deprecated Will be removed
+   * @param topic
+   * @param options
+   * @returns
+   */
   async aggregate(topic: string[], options: ChannelOptions) {
     const w = await this.getWallet()
     let from = options.from
@@ -229,8 +245,8 @@ export class ParkyDB {
     // @ts-ignore
     return this.messagingService.aggregate(topic, {
       ...options,
-      sigkey,
-      pubkey,
+      sigkey: h,
+      encryptionPubKey: hexlify(pubkey),
     })
   }
 

@@ -12,9 +12,9 @@ export interface IMessaging {
 export interface ChannelOptions {
     encryptionPubKey?: string;
     from?: string;
-    sigkey?: Uint8Array;
-    pubkey?: Uint8Array;
+    sigkey?: string;
     canPublish?: boolean;
+    isCRDT?: boolean;
     isKeyExchangeChannel?: boolean;
     canSubscribe?: boolean;
     blockCodec: BlockCodec<any, unknown>;
