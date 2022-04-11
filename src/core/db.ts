@@ -166,12 +166,6 @@ export class ParkyDB {
    * @returns
    */
   async createTopicPubsub(topic: string, options: ChannelOptions) {
-    //    const w = await this.getWallet()
-    //    const acct = await w.getAccounts()
-    //    const from = acct[0]
-
-    const privateKey = generatePrivateKey()
-    const pubkey = getPublicKey(privateKey)
 
     if (options.canPublish === null) {
       options.canPublish = true
@@ -185,8 +179,8 @@ export class ParkyDB {
     return this.messagingService.createTopic(
       topic,
       options,
-      options.sigkey || hexlify(privateKey),
-      options.encryptionPubKey || hexlify(pubkey),
+      options.sigkey as any,
+      options.encryptionPubKey as any,
     )
   }
   async getWallet(): Promise<any> {

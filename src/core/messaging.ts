@@ -203,7 +203,6 @@ export class MessagingService implements IMessaging {
     }
 
     // Topic subscriber observes for DAG blocks (IPLD as bytes)
-    let peerEncKey: number | ethers.utils.BytesLike | ethers.utils.Hexable
     let pubsub = new Subject<any>()
     if (options.canSubscribe) {
       this.waku.relay.addObserver(
@@ -217,8 +216,6 @@ export class MessagingService implements IMessaging {
           if (msg.contentTopic === topic) {
             pubsub.next({ message: msg, decoded: message })
           }
-          // @ts-ignore
-          peerEncKey = message.publicKeyMessage.encryptionPublicKey
         },
         [topic],
       )
@@ -278,9 +275,9 @@ export class MessagingService implements IMessaging {
 
         const packed = await options.blockCodec.encode(message)
         let config: any = {}
-        if (peerEncKey) {
+        if (options.encryptionPubKey) {
           config = {
-            encPublicKey: arrayify(peerEncKey),
+            encPublicKey: arrayify(options.encryptionPubKey),
           }
         }
         if (options.isKeyExchangeChannel) {
