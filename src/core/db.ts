@@ -19,7 +19,7 @@ import { JsonSchemaService } from './jsonschema'
 import { ServiceContext } from '../interfaces/ServiceContext'
 import { ChannelOptions, MessagingService } from './messaging'
 import { Hooks } from './hooks'
-import { async, lastValueFrom, map, Observable, Subject } from 'rxjs'
+import { async, filter, lastValueFrom, map, Observable, Subject } from 'rxjs'
 import { BlockValue } from '../interfaces/Blockvalue'
 import { WalletController } from '../wallet/controller'
 import { generatePrivateKey, getPublicKey } from 'js-waku'
@@ -187,16 +187,15 @@ export class ParkyDB {
     options.isKeyExchangeChannel = true
     const pubsub = await this.messagingService.createTopic(topic, options)
     return pubsub.onBlockReply$.pipe(
+      filter((res: any) => res.decoded.payload.askForEncryptionKey),
       map((req) => {
-        if (req.decoded.payload.askForEncryptionKey) {
-          pubsub.publish({
-            encryptionPublicKey: hexlify(pub),
-          } as any)
-          // TODO: Store in datastore or encrypted
-          options.canDecrypt = true
-          options.encryptionPubKey = pub as any
-          return options
-        }
+        pubsub.publish({
+          encryptionPublicKey: hexlify(pub),
+        } as any)
+        // TODO: Store in datastore or encrypted
+        options.canDecrypt = true
+        options.encryptionPubKey = pub as any
+        return options
       }),
     )
   }
@@ -212,6 +211,7 @@ export class ParkyDB {
     pubsub.publish({ askForEncryptionKey: true } as any)
 
     return pubsub.onBlockReply$.pipe(
+      filter((res: any) => !!res.decoded.payload.encryptionPublicKey),
       map((res: any) => {
         return res.decoded.payload.encryptionPublicKey
       }),

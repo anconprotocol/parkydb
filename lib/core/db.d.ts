@@ -31,7 +31,7 @@ export declare class ParkyDB {
     }>;
     put(key: CID, value: Block<any>): Promise<any>;
     createTopicPubsub(topic: string, options: ChannelOptions): Promise<import("../interfaces/PubsubTopic").PubsubTopic>;
-    emitKeyExchangePublicKey(topic: string, options: ChannelOptions): Promise<Observable<ChannelOptions | undefined>>;
+    emitKeyExchangePublicKey(topic: string, options: ChannelOptions): Promise<Observable<ChannelOptions>>;
     requestKeyExchangePublicKey(topic: string, options: ChannelOptions): Promise<any>;
     getWallet(): Promise<any>;
     get ancon(): AnconService;
