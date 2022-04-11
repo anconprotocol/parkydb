@@ -14,6 +14,7 @@ export interface ChannelOptions {
     from?: string;
     sigkey?: string;
     canPublish?: boolean;
+    canDecrypt?: boolean;
     isCRDT?: boolean;
     isKeyExchangeChannel?: boolean;
     canSubscribe?: boolean;

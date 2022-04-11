@@ -32,6 +32,7 @@ export interface ChannelOptions {
   from?: string
   sigkey?: string
   canPublish?: boolean
+  canDecrypt?: boolean
   isCRDT?: boolean
   isKeyExchangeChannel?: boolean
   canSubscribe?: boolean
@@ -179,7 +180,7 @@ export class MessagingService implements IMessaging {
     privateKey: string,
     encPublicKey: string,
   ): Promise<PubsubTopic> {
-    if (!options.isKeyExchangeChannel) {
+    if (options.canDecrypt) {
       this.waku.addDecryptionKey(privateKey)
     }
     let pub = new Subject<any>()
@@ -202,6 +203,7 @@ export class MessagingService implements IMessaging {
     }
 
     // Topic subscriber observes for DAG blocks (IPLD as bytes)
+    let peerEncKey: number | ethers.utils.BytesLike | ethers.utils.Hexable
     let pubsub = new Subject<any>()
     if (options.canSubscribe) {
       this.waku.relay.addObserver(
@@ -215,6 +217,8 @@ export class MessagingService implements IMessaging {
           if (msg.contentTopic === topic) {
             pubsub.next({ message: msg, decoded: message })
           }
+          // @ts-ignore
+          peerEncKey = message.publicKeyMessage.encryptionPublicKey
         },
         [topic],
       )
@@ -260,7 +264,7 @@ export class MessagingService implements IMessaging {
           const pubkeyMessage = {
             signature: sig,
             ethAddress: this.defaultAddress,
-            encryptionPublicKey: this.pubkey,
+            encryptionPublicKey: options.encryptionPubKey,
           } as PublicKeyMessage
 
           message = {
@@ -273,8 +277,11 @@ export class MessagingService implements IMessaging {
         }
 
         const packed = await options.blockCodec.encode(message)
-        let config: any = {
-          encPublicKey: arrayify(encPublicKey),
+        let config: any = {}
+        if (peerEncKey) {
+          config = {
+            encPublicKey: arrayify(peerEncKey),
+          }
         }
         if (options.isKeyExchangeChannel) {
           config = {}
@@ -285,7 +292,9 @@ export class MessagingService implements IMessaging {
     }
     return {
       onBlockReply$,
-      publish: (block: any) => pub.next(block),
+      publish: (block: any) => {
+        return pub.next(block)
+      },
       close: () => {
         if (cancel) {
           cancel.unsubscribe()
