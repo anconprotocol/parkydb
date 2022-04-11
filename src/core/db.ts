@@ -19,7 +19,7 @@ import { JsonSchemaService } from './jsonschema'
 import { ServiceContext } from '../interfaces/ServiceContext'
 import { ChannelOptions, MessagingService } from './messaging'
 import { Hooks } from './hooks'
-import { Subject } from 'rxjs'
+import { lastValueFrom, Subject } from 'rxjs'
 import { BlockValue } from '../interfaces/Blockvalue'
 import { WalletController } from '../wallet/controller'
 import { generatePrivateKey, getPublicKey } from 'js-waku'
@@ -166,7 +166,6 @@ export class ParkyDB {
    * @returns
    */
   async createTopicPubsub(topic: string, options: ChannelOptions) {
-
     if (options.canPublish === null) {
       options.canPublish = true
     }
@@ -176,12 +175,51 @@ export class ParkyDB {
 
     // creates an observable and subscribes to store block creation
     // @ts-ignore
-    return this.messagingService.createTopic(
-      topic,
-      options,
-
-    )
+    return this.messagingService.createTopic(topic, options)
   }
+
+  async emitKeyExchangePublicKey(
+    topic: string,
+    options: ChannelOptions,
+  ): Promise<any> {
+    const pk = generatePrivateKey()
+    const pub = getPublicKey(pk)
+
+    options.canPublish = true
+    options.isKeyExchangeChannel = true
+    const pubsub = await this.messagingService.createTopic(topic, options)
+    pubsub.publish({
+      encryptionPublicKey: hexlify(pub),
+    } as any)    
+    // TODO: Store in datastore or encrypted
+    options.canDecrypt = true
+    options.sigkey = pk as any
+    options.encryptionPubKey = pub as any
+    return {
+      pubsub: this.messagingService.createTopic(topic, options),
+    }
+  }
+
+  async subscribeKeyExchangePublicKey(
+    topic: string,
+    options: ChannelOptions,
+  ): Promise<any> {
+    try {
+      options.canSubscribe = true
+      options.isKeyExchangeChannel = true  
+      const pubsub = await this.messagingService.createTopic(topic, options)
+      const { decoded } = await lastValueFrom(pubsub.onBlockReply$)
+      options.canDecrypt = false
+      options.canSubscribe = false
+      options.encryptionPubKey = decoded.payload.encryptionPubKey
+      return {
+        pubsub: this.messagingService.createTopic(topic, options),
+      }
+    } catch (ex) {
+      return null
+    }
+  }
+
   async getWallet(): Promise<any> {
     // await this.keyringController.load(this.db)
     return this.keyringController.keyringController
