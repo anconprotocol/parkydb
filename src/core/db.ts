@@ -213,7 +213,7 @@ export class ParkyDB {
 
     return pubsub.onBlockReply$.pipe(
       map((res: any) => {
-        return res.encryptionPubKey
+        return res.encryptionPublicKey
       }),
     )
   }
