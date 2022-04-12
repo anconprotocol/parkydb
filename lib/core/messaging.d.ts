@@ -26,11 +26,9 @@ export interface ChannelOptions {
 }
 export declare class MessagingService implements IMessaging {
     private web3Provider;
-    private pubkey;
-    private pubkeySig;
     private defaultAddress;
     waku: Waku;
-    constructor(web3Provider: any, pubkey: string, pubkeySig: string, defaultAddress: string);
+    constructor(web3Provider: any, defaultAddress: string);
     load(key: any, data: any): Promise<any>;
     bootstrap(options: any): Promise<{
         waku: Waku;

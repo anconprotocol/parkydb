@@ -49,8 +49,6 @@ export class MessagingService implements IMessaging {
 
   constructor(
     private web3Provider: any,
-    private pubkey: string,
-    private pubkeySig: string,
     private defaultAddress: string,
   ) {}
 
@@ -206,7 +204,7 @@ export class MessagingService implements IMessaging {
       this.waku.relay.addObserver(
         (msg: any) => {
           let message = options.blockCodec.decode(msg.payload) as PacketPayload
-          if (this.pubkey && this.defaultAddress && this.web3Provider) {
+          if ( this.defaultAddress && this.web3Provider) {
             message = options.blockCodec.decode(
               msg.payload,
             ) as SecurePacketPayload
@@ -245,7 +243,7 @@ export class MessagingService implements IMessaging {
       // @ts-ignore
       cancel = pub$.subscribe(async (block: any) => {
         let message: any = { payload: block }
-        if (this.pubkey && this.defaultAddress && this.web3Provider) {
+        if (this.defaultAddress && this.web3Provider) {
           const msg = this.buildBlockDocument('data.universal', block as any)
 
           let sig = null

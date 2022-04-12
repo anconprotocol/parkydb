@@ -99,18 +99,16 @@ export class ParkyDB {
     if (options.withWeb3) {
       this.messagingService = new MessagingService(
         options.withWeb3.provider,
-        options.withWeb3.pubkey,
-        options.withWeb3.pubkeySig,
         options.withWeb3.defaultAddress,
       )
     } else {
-      this.messagingService = new MessagingService(undefined, '', '', '')
+      this.messagingService = new MessagingService(undefined, '')
     }
 
     if (options.withAncon) {
       this.anconService = new AnconService(
         options.withAncon.walletconnectProvider,
-        options.withAncon.pubkey,
+ //       options.withAncon.pubkey,
         options.withAncon.api,
       )
     }

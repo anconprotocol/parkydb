@@ -4,7 +4,6 @@ import WalletConnectProvider from '@walletconnect/web3-provider'
 export class AnconService {
   constructor(
     private provider: WalletConnectProvider,
-    private pubkey: string,
     private rpc: string,
   ) {}
 
@@ -23,9 +22,9 @@ export class AnconService {
 
     return { digest: b, signature }
   }
-  async createDid() {
+  async createDid(pubkey: any) {
     // encode the pub key
-    const base58Encode = ethers.utils.base58.encode(this.pubkey)
+    const base58Encode = ethers.utils.base58.encode(pubkey)
 
     const message = `#Welcome to Ancon Protocol!
     
