@@ -73,7 +73,7 @@ export class AnconService {
       path: '/',
       from: `did:ethr:${network.name}:${this.provider.accounts[0]}`,
       signature,
-      topic: options.topic,
+//      topic: options.topic,
       data: options.message,
     }
 
