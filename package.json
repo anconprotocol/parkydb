@@ -1,6 +1,6 @@
 {
   "name": "parkydb",
-  "version": "1.0.4A",
+  "version": "1.0.5",
   "description": "",
   "main": "lib/index.js",
   "scripts": {
