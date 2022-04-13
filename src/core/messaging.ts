@@ -47,10 +47,7 @@ export class MessagingService implements IMessaging {
   // @ts-ignore
   waku: Waku
 
-  constructor(
-    private web3Provider: any,
-    private defaultAddress: string,
-  ) {}
+  constructor(private web3Provider: any, private defaultAddress: string) {}
 
   async load(key: any, data: any): Promise<any> {}
 
@@ -165,6 +162,19 @@ export class MessagingService implements IMessaging {
     return recovered === msg.ethAddress
   }
 
+  async subscribeStore(topics: string[], timeFilter: any) {
+    const sub = new Subject<any>()
+    await this.waku.store
+      .queryHistory(topics, {
+        callback: sub.next,
+        timeFilter,
+      })
+      .catch((e) => {
+        sub.error(e)
+        console.log('Failed to retrieve messages from store', e)
+      })
+    return sub.asObservable()
+  }
   /**
    * Creates a pubsub topic. Note topic format must be IPLD dag-json or dag-cbor
    * @param topic
@@ -204,7 +214,7 @@ export class MessagingService implements IMessaging {
       this.waku.relay.addObserver(
         (msg: any) => {
           let message = options.blockCodec.decode(msg.payload) as PacketPayload
-          if ( this.defaultAddress && this.web3Provider) {
+          if (this.defaultAddress && this.web3Provider) {
             message = options.blockCodec.decode(
               msg.payload,
             ) as SecurePacketPayload
