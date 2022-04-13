@@ -158,6 +158,14 @@ export class ParkyDB {
     return m
   }
 
+  async getSyncStore(filter: any) {
+    return  this.messagingService.subscribeStore([this.syncTopic], filter)
+  }
+
+  async getTopicStore(topics: string[], filter: any) {
+    return  this.messagingService.subscribeStore(topics, filter)
+  }
+
   async putBlock(payload: any, options: any = {}) {
     const block = await this.dagService.build({ ...payload, ...options })
     const has = await this.get(block.cid.toString(), null)
