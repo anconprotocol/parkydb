@@ -17,8 +17,17 @@ export declare class ParkyDB {
     private messagingService;
     private ipfsService;
     db: any;
+    syncTopic: string;
+    syncPubsub: any;
     constructor();
-    initialize(options?: any): Promise<{
+    initialize(options: {
+        withWallet: any;
+        withWeb3?: any;
+        withAncon?: any;
+        withIpfs?: any;
+        wakuconnect?: any;
+        enableSync?: any;
+    }): Promise<{
         waku: import("js-waku").Waku;
         connected: void;
     }>;

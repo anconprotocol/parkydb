@@ -29,6 +29,7 @@ import { ethers } from 'ethers'
 import { AnconService } from './ancon'
 import { IPFSService } from './ipfs'
 import { hexlify } from 'ethers/lib/utils'
+import { decode, encode } from 'cbor-x'
 const { MerkleJson } = require('merkle-json')
 
 /**
@@ -48,6 +49,9 @@ export class ParkyDB {
   // @ts-ignore
   private ipfsService: IPFSService
   db: any
+  // @ts-ignore
+  syncTopic: string
+  syncPubsub: any
   constructor() {
     const db: Dexie | any = new Dexie(
       'ancon',
@@ -79,7 +83,14 @@ export class ParkyDB {
     )
   }
 
-  async initialize(options: any = { wakuconnect: null }) {
+  async initialize(options: {
+    withWallet: any
+    withWeb3?: any
+    withAncon?: any
+    withIpfs?: any
+    wakuconnect?: any
+    enableSync?: any
+  }) {
     await this.keyringController.load(this.db)
 
     if (options.withWallet) {
@@ -97,6 +108,8 @@ export class ParkyDB {
       }
     }
     if (options.withWeb3) {
+      this.syncTopic = `/parkydb/1/${options.withWeb3.defaultAddress}-blockdb/cbor`
+
       this.messagingService = new MessagingService(
         options.withWeb3.provider,
         options.withWeb3.defaultAddress,
@@ -108,7 +121,7 @@ export class ParkyDB {
     if (options.withAncon) {
       this.anconService = new AnconService(
         options.withAncon.walletconnectProvider,
- //       options.withAncon.pubkey,
+        //       options.withAncon.pubkey,
         options.withAncon.api,
       )
     }
@@ -121,7 +134,28 @@ export class ParkyDB {
     }
     // options.withWallet.password = undefined
     // @ts-ignore
-    return this.messagingService.bootstrap(options.wakuconnect)
+    const m = await this.messagingService.bootstrap(options.wakuconnect)
+    if (options.enableSync && options.withIpfs && options.withWeb3) {
+      const blockCodec = {
+        name: 'cbor',
+        code: '0x71',
+        encode: async (obj: any) => encode(obj),
+        decode: (buffer: any) => decode(buffer),
+      }
+      // @ts-ignore
+      this.syncPubsub = await this.createTopicPubsub(this.syncTopic, {
+        blockCodec: blockCodec as any,
+        canSubscribe: false,
+        canPublish: true,
+        isCRDT: true,
+      })
+    }
+    if (options.enableSync && !options.withIpfs && !options.withWeb3) {
+      throw new Error(
+        'To enable sync needs IPFS and Waku for Web3 service enabled',
+      )
+    }
+    return m
   }
 
   async putBlock(payload: any, options: any = {}) {
@@ -132,6 +166,22 @@ export class ParkyDB {
     } else {
       await this.put(block.cid, block)
 
+      if (this.syncPubsub) {
+        setTimeout(async () => {
+          // @ts-ignore
+          const fileAsBlob = await fetch(block.value.image)
+          const file = await fileAsBlob.blob()
+          // @ts-ignore
+          const cidFromIpfs = await this.ipfs.uploadFile(file)
+          this.syncPubsub.publish({
+            cid: block.cid.toString(),
+            document: {
+              ...(block.value as any),
+              image: cidFromIpfs.image,
+            },
+          })
+        }, 1500)
+      }
       return { id: block.cid.toString() }
     }
   }
