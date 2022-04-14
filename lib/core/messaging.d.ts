@@ -10,6 +10,8 @@ export interface IMessaging {
     bootstrap(options: any): void;
 }
 export interface ChannelOptions {
+    pk?: string;
+    pub?: string;
     encryptionPubKey?: string;
     from?: string;
     sigkey?: string;

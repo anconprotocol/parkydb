@@ -235,9 +235,7 @@ export class ParkyDB {
   }
 
   async emitKeyExchangePublicKey(topic: string, options: ChannelOptions) {
-    const pk = generatePrivateKey()
-    const pub = getPublicKey(pk)
-
+    const {pk, pub} = options
     options.canPublish = true
     options.canSubscribe = true
     options.isKeyExchangeChannel = true
@@ -246,12 +244,12 @@ export class ParkyDB {
       filter((res: any) => res.decoded.payload.askForEncryptionKey),
       map((req) => {
         pubsub.publish({
-          encryptionPublicKey: hexlify(pub),
+          encryptionPublicKey: (pub),
         } as any)
         // TODO: Store in datastore or encrypted
         options.canDecrypt = true
         options.encryptionPubKey = pub as any
-        return options
+        return true
       }),
     )
   }

@@ -28,6 +28,8 @@ export interface IMessaging {
 }
 
 export interface ChannelOptions {
+  pk?: string
+  pub?: string
   encryptionPubKey?: string
   from?: string
   sigkey?: string
@@ -212,10 +214,10 @@ export class MessagingService implements IMessaging {
     let pubsub = new Subject<any>()
     if (options.canSubscribe) {
       this.waku.relay.addObserver(
-        (msg: any) => {
-          let message = options.blockCodec.decode(msg.payload) as PacketPayload
+        async(msg: any) => {
+          let message = await options.blockCodec.decode(msg.payload) as PacketPayload
           if (this.defaultAddress && this.web3Provider) {
-            message = options.blockCodec.decode(
+            message = await options.blockCodec.decode(
               msg.payload,
             ) as SecurePacketPayload
           }
@@ -281,14 +283,6 @@ export class MessagingService implements IMessaging {
 
         const packed = await options.blockCodec.encode(message)
         let config: any = {}
-        if (options.encryptionPubKey) {
-          config = {
-            encPublicKey: arrayify(options.encryptionPubKey),
-          }
-        }
-        if (options.isKeyExchangeChannel) {
-          config = {}
-        }
         const msg = await WakuMessage.fromBytes(packed, topic, config)
         await this.waku.relay.send(msg)
       })
