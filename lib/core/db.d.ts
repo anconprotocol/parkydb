@@ -39,8 +39,8 @@ export declare class ParkyDB {
         encode: (obj: any) => Promise<Buffer>;
         decode: (buffer: any) => any;
     };
-    getSyncStore(filter: any): Promise<Observable<any>>;
-    getTopicStore(topics: string[], filter: any): Promise<Observable<any>>;
+    getSyncStore(filter: any): Promise<Observable<import("js-waku").WakuMessage>>;
+    getTopicStore(topics: string[], filter: any): Promise<Observable<import("js-waku").WakuMessage>>;
     putBlock(payload: any, options?: any): Promise<{
         id: string;
         model: any;

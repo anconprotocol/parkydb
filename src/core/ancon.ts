@@ -69,12 +69,16 @@ export class AnconService {
     )
     const web3provider = new ethers.providers.Web3Provider(this.provider)
     const network = await web3provider.getNetwork()
-    const payload = {
+    let payload = {
       path: '/',
       from: `did:ethr:${network.name}:${this.provider.accounts[0]}`,
       signature,
 //      topic: options.topic,
       data: options.message,
+    } as any
+      
+    if (options.topic){
+      payload.topic = options.topic
     }
 
     const requestOptions = {

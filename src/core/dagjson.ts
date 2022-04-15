@@ -6,7 +6,7 @@ import { IDataBuilder } from '../interfaces/IBuilder'
 export class DAGJsonService implements IDataBuilder {
 
   async decodeBlock(block: any) {
-    return Block.decode({ bytes: block.bytes, codec, hasher })
+    return Block.decode({ bytes: block, codec, hasher })
   }
   async build(value: object) {
     // encode a block

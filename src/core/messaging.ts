@@ -7,7 +7,7 @@ if (!global.window) {
 import { Waku, WakuMessage } from 'js-waku'
 import { Codec } from 'multiformats/bases/base'
 import { BlockCodec, ByteView } from 'multiformats/codecs/interface'
-import { map, Observable, Subject, tap } from 'rxjs'
+import { map, mergeMap, Observable, of, Subject, tap } from 'rxjs'
 import { ChannelCodeEnum } from '../interfaces/BlockCodec'
 import { BlockValue } from '../interfaces/Blockvalue'
 import { ChannelTopic } from '../interfaces/ChannelTopic'
@@ -165,17 +165,13 @@ export class MessagingService implements IMessaging {
   }
 
   async subscribeStore(topics: string[], timeFilter: any) {
-    const sub = new Subject<any>()
-    await this.waku.store
-      .queryHistory(topics, {
-        callback: sub.next,
-        timeFilter,
-      })
-      .catch((e) => {
-        sub.error(e)
-        console.log('Failed to retrieve messages from store', e)
-      })
-    return sub.asObservable()
+    const p = this.waku.store.queryHistory(topics, {
+      timeFilter,
+    })
+    return of(p).pipe(mergeMap((x
+) => x), mergeMap
+
+(x => (x)))
   }
   /**
    * Creates a pubsub topic. Note topic format must be IPLD dag-json or dag-cbor
@@ -214,12 +210,14 @@ export class MessagingService implements IMessaging {
     let pubsub = new Subject<any>()
     if (options.canSubscribe) {
       this.waku.relay.addObserver(
-        async(msg: any) => {
-          let message = await options.blockCodec.decode(msg.payload) as PacketPayload
+        async (msg: any) => {
+          let message = (await options.blockCodec.decode(
+            msg.payload,
+          )) as PacketPayload
           if (this.defaultAddress && this.web3Provider) {
-            message = await options.blockCodec.decode(
+            message = (await options.blockCodec.decode(
               msg.payload,
-            ) as SecurePacketPayload
+            )) as SecurePacketPayload
           }
           if (msg.contentTopic === topic) {
             pubsub.next({ message: msg, decoded: message })
