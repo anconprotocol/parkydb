@@ -1,6 +1,6 @@
 {
   "name": "parkydb",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "",
   "main": "lib/index.js",
   "scripts": {
@@ -49,7 +49,8 @@
     "multiformats": "^9.6.4",
     "protobufjs": "^6.11.2",
     "rxjs": "^7.5.5",
-    "to-json-schema": "^0.2.5"
+    "to-json-schema": "^0.2.5",
+    "uuidv4": "^6.2.13"
   },
   "devDependencies": {
     "@graphql-codegen/cli": "^2.6.2",

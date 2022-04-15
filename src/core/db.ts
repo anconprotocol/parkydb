@@ -11,8 +11,9 @@ import { CID } from 'blockstore-core/base'
 import Dexie, { liveQuery, Table } from 'dexie'
 import 'dexie-observable/api'
 
+import { v4 as uuidv4 } from 'uuid'
 import MiniSearch from 'minisearch'
-import { Block } from 'multiformats/block'
+import { Block, ByteView } from 'multiformats/block'
 import { DAGJsonService } from './dagjson'
 import { GraphqlService } from '../query/graphql'
 import { JsonSchemaService } from './jsonschema'
@@ -52,6 +53,7 @@ export class ParkyDB {
   // @ts-ignore
   syncTopic: string
   syncPubsub: any
+  syncPubsubDexie: any
   constructor() {
     const db: Dexie | any = new Dexie(
       'ancon',
@@ -66,15 +68,14 @@ export class ParkyDB {
     db.version(1).stores({
       keyring: `id`,
       history: `&cid, refs`,
-      blockdb: `
-        ++id,
-        &cid,
-        uuid,
+      blockdb: `++id,&cid,
+        &uuid,
         topic,
         kind,
         document.kind,
         timestamp`,
     })
+
 
     this.db = db
     this.db.blockdb.hook(
@@ -136,18 +137,30 @@ export class ParkyDB {
     // @ts-ignore
     const m = await this.messagingService.bootstrap(options.wakuconnect)
     if (options.enableSync && options.withIpfs && options.withWeb3) {
-      const blockCodec = {
-        name: 'cbor',
-        code: '0x71',
-        encode: async (obj: any) => encode(obj),
-        decode: (buffer: any) => decode(buffer),
-      }
-      // @ts-ignore
-      this.syncPubsub = await this.createTopicPubsub(this.syncTopic, {
-        blockCodec: blockCodec as any,
-        canSubscribe: false,
+      this.syncPubsubDexie = await this.createTopicPubsub(this.syncTopic, {
+        // @ts-ignore
+        blockCodec: this.defaultBlockCodec,
+        isKeyExchangeChannel: false,
         canPublish: true,
+        canSubscribe: false,
         isCRDT: true,
+      })
+
+      const startTime = new Date()
+      // 7 days/week, 24 hours/day, 60min/hour, 60secs/min, 100ms/sec
+      startTime.setTime(startTime.getTime() - 7 * 24 * 60 * 60 * 1000)
+      const sync = await this.getTopicStore(
+        [this.syncTopic],
+        {
+          startTime,
+          endTime: new Date(),
+        },
+      )
+
+      sync.subscribe(async (message: any) => {
+        const block: Block<any> = await this.dagService.decodeBlock(decode(message.payload))
+
+        await this.put(block.cid, block)
       })
     }
     if (options.enableSync && !options.withIpfs && !options.withWeb3) {
@@ -158,12 +171,20 @@ export class ParkyDB {
     return m
   }
 
+  get defaultBlockCodec() {
+    return {
+      name: 'cbor',
+      code: '0x71',
+      encode: async (obj: any) => encode(obj),
+      decode: (buffer: any) => decode(buffer),
+    }
+  }
   async getSyncStore(filter: any) {
-    return  this.messagingService.subscribeStore([this.syncTopic], filter)
+    return this.messagingService.subscribeStore([this.syncTopic], filter)
   }
 
   async getTopicStore(topics: string[], filter: any) {
-    return  this.messagingService.subscribeStore(topics, filter)
+    return this.messagingService.subscribeStore(topics, filter)
   }
 
   async putBlock(payload: any, options: any = {}) {
@@ -174,19 +195,10 @@ export class ParkyDB {
     } else {
       await this.put(block.cid, block)
 
-      if (this.syncPubsub) {
+      if (this.syncPubsubDexie) {
         setTimeout(async () => {
-          // @ts-ignore
-          const fileAsBlob = await fetch(block.value.image)
-          const file = await fileAsBlob.blob()
-          // @ts-ignore
-          const cidFromIpfs = await this.ipfs.uploadFile(file)
-          this.syncPubsub.publish({
-            cid: block.cid.toString(),
-            document: {
-              ...(block.value as any),
-              image: cidFromIpfs.image,
-            },
+          this.syncPubsubDexie.publish({
+            dag: block.bytes
           })
         }, 1500)
       }
@@ -201,18 +213,22 @@ export class ParkyDB {
       fields: Object.keys(value.value),
     })
 
+    const uuid = uuidv4()
     await miniSearch.addAllAsync([{ id: key.toString(), ...value.value }])
-    return this.db.blockdb.put({
-      cid: key.toString(),
-      dag: value,
-      document: value.value,
-      schemas: {
-        jsonschema: jsch,
-      },
-      hashtag: mj.hash(value.value),
-      index: JSON.stringify(miniSearch),
-      timestamp: new Date().getTime(),
-    })
+    return this.db.blockdb.put(
+      {
+        cid: key.toString(),
+        uuid,
+        dag: value,
+        document: value.value,
+        schemas: {
+          jsonschema: jsch,
+        },
+        hashtag: mj.hash(value.value),
+        index: JSON.stringify(miniSearch),
+        timestamp: new Date().getTime(),
+      }
+    )
   }
 
   /**
@@ -235,7 +251,7 @@ export class ParkyDB {
   }
 
   async emitKeyExchangePublicKey(topic: string, options: ChannelOptions) {
-    const {pk, pub} = options
+    const { pk, pub } = options
     options.canPublish = true
     options.canSubscribe = true
     options.isKeyExchangeChannel = true
@@ -244,7 +260,7 @@ export class ParkyDB {
       filter((res: any) => res.decoded.payload.askForEncryptionKey),
       map((req) => {
         pubsub.publish({
-          encryptionPublicKey: (pub),
+          encryptionPublicKey: pub,
         } as any)
         // TODO: Store in datastore or encrypted
         options.canDecrypt = true

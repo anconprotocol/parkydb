@@ -4,6 +4,10 @@ import { sha256 as hasher } from 'multiformats/hashes/sha2'
 import { IDataBuilder } from '../interfaces/IBuilder'
 
 export class DAGJsonService implements IDataBuilder {
+
+  async decodeBlock(block: any) {
+    return Block.decode({ bytes: block.bytes, codec, hasher })
+  }
   async build(value: object) {
     // encode a block
     let block = await Block.encode({ value, codec, hasher })

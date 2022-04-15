@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import { CID } from 'blockstore-core/base';
 import { Table } from 'dexie';
 import 'dexie-observable/api';
@@ -19,6 +20,7 @@ export declare class ParkyDB {
     db: any;
     syncTopic: string;
     syncPubsub: any;
+    syncPubsubDexie: any;
     constructor();
     initialize(options: {
         withWallet: any;
@@ -31,6 +33,12 @@ export declare class ParkyDB {
         waku: import("js-waku").Waku;
         connected: void;
     }>;
+    get defaultBlockCodec(): {
+        name: string;
+        code: string;
+        encode: (obj: any) => Promise<Buffer>;
+        decode: (buffer: any) => any;
+    };
     getSyncStore(filter: any): Promise<Observable<any>>;
     getTopicStore(topics: string[], filter: any): Promise<Observable<any>>;
     putBlock(payload: any, options?: any): Promise<{

@@ -49,7 +49,7 @@ export class MessagingService implements IMessaging {
   // @ts-ignore
   waku: Waku
 
-  constructor(private web3Provider: any, private defaultAddress: string) {}
+  constructor(public web3Provider: any, public defaultAddress: string) {}
 
   async load(key: any, data: any): Promise<any> {}
 
