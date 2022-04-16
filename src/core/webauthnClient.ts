@@ -8,13 +8,14 @@ const { Crypto } = require('@peculiar/webcrypto')
 const crypto = new Crypto()
 // @ts-ignore
 if (!global.window) {
-  global.crypto = crypto
+// @ts-ignore
+global.crypto = crypto
 }
 
 export class WebauthnHardwareClient {
   constructor(private server: WebauthnHardwareAuthenticate) {}
 
-  async register(username: string, displayName: string) {
+  async register(origin: any,username: string, displayName: string) {
     try {
       const credentialCreationOptions = await this.server.registrationOptions()
 
@@ -27,7 +28,8 @@ export class WebauthnHardwareClient {
       credentialCreationOptions.user.name = username
       credentialCreationOptions.user.displayName = displayName
 
-      const credential: any = await navigator.credentials.create({
+// @ts-ignore
+const credential: any = await navigator.credentials.create({
         publicKey: credentialCreationOptions,
       })
 
@@ -45,13 +47,13 @@ export class WebauthnHardwareClient {
         },
       }
 
-      const registerResponse = await this.server.register({ credential: data })
+      const registerResponse = await this.server.register(origin,{ credential: data })
 
       return { registerResponse, credential: data }
     } catch (e) {}
   }
 
-  async verify(registerResponse: {publicKey: string, prevCounter: any}, userCredential: any): Promise<any> {
+  async verify(origin: any,registerResponse: {publicKey: string, prevCounter: any}, userCredential: any): Promise<any> {
     try {
       const credentialRequestOptions: any = await this.server.verifyOptions()
 
@@ -65,6 +67,7 @@ export class WebauthnHardwareClient {
           transports: ['internal'],
         },
       ]
+// @ts-ignore
 
       const credential: any = await navigator.credentials.get({
         publicKey: credentialRequestOptions,
@@ -84,7 +87,7 @@ export class WebauthnHardwareClient {
         },
       }
 
-      return this.server.verify({
+      return this.server.verify(origin,{
         credential: data,
         prevCounter: registerResponse.prevCounter,
         publicKey: registerResponse.publicKey,

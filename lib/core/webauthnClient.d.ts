@@ -2,7 +2,7 @@ import { WebauthnHardwareAuthenticate } from './webauthnServer';
 export declare class WebauthnHardwareClient {
     private server;
     constructor(server: WebauthnHardwareAuthenticate);
-    register(username: string, displayName: string): Promise<{
+    register(origin: any, username: string, displayName: string): Promise<{
         registerResponse: any;
         credential: {
             rawId: string;
@@ -14,7 +14,7 @@ export declare class WebauthnHardwareClient {
             };
         };
     } | undefined>;
-    verify(registerResponse: {
+    verify(origin: any, registerResponse: {
         publicKey: string;
         prevCounter: any;
     }, userCredential: any): Promise<any>;

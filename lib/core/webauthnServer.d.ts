@@ -8,9 +8,9 @@ export declare class WebauthnHardwareAuthenticate {
         rpIcon: any;
     }): void;
     registrationOptions(): Promise<any>;
-    register(request: any): Promise<any>;
+    register(origin: any, request: any): Promise<any>;
     verifyOptions(): Promise<import("fido2-lib").PublicKeyCredentialRequestOptions>;
-    verify(verifyReq: {
+    verify(origin: any, verifyReq: {
         challenge: any;
         userHandle: any;
         credential: any;

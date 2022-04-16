@@ -7,7 +7,8 @@ const { Crypto } = require('@peculiar/webcrypto')
 const crypto = new Crypto()
 // @ts-ignore
 if (!global.window) {
-  global.crypto = crypto
+// @ts-ignore
+global.crypto = crypto
 }
 
 export class WebauthnHardwareAuthenticate {
@@ -49,7 +50,7 @@ export class WebauthnHardwareAuthenticate {
     return req
   }
 
-  async register(request: any): Promise<any> {
+  async register(origin: any,request: any): Promise<any> {
     const { credential } = request
 
     const challenge = new Uint8Array(request.challenge.data).buffer
@@ -96,7 +97,7 @@ export class WebauthnHardwareAuthenticate {
     return authnOptions
   }
 
-  async verify(verifyReq: { challenge: any; userHandle: any; credential: any; publicKey: any; prevCounter: any; }): Promise<boolean> {
+  async verify(origin: any,verifyReq: { challenge: any; userHandle: any; credential: any; publicKey: any; prevCounter: any; }): Promise<boolean> {
     const { credential } = verifyReq
 
     credential.rawId = new Uint8Array(
