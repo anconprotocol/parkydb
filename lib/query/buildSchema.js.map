@@ -1,0 +1,1 @@
+{"version":3,"file":"buildSchema.js","sourceRoot":"","sources":["../../src/query/buildSchema.ts"],"names":[],"mappings":";;;AAEA,iEAAqF;AAsB9E,KAAK,UAAU,WAAW,CAAC,OAA2B;IAC3D,MAAM,SAAS,GAAG,OAAO,CAAC,SAAS,CAAC;IACpC,MAAM,MAAM,GAAG,MAAM,kCAAe,CAAC,oBAAoB,CAAC,EAAE,GAAG,OAAO,EAAE,SAAS,EAAE,CAAC,CAAC;IACrF,OAAO,MAAM,CAAC;AAChB,CAAC;AAJD,kCAIC"}

@@ -1,4 +1,4 @@
-import { decode, encode } from 'cbor-x'
+      import { decode, encode } from 'cbor-x'
 import test from 'ava'
 import { WakuMessage } from 'js-waku'
 import { ByteView } from 'multiformats/codecs/interface'

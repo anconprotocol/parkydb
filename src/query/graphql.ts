@@ -2,7 +2,6 @@ import {
   execute,
   GraphQLObjectType,
   GraphQLSchema,
-  Source,
 } from 'graphql'
 import { IDataBuilder } from '../interfaces/IBuilder'
 import { IQueryBuilder } from '../interfaces/IQuery'
@@ -10,8 +9,7 @@ import { ServiceContext } from '../interfaces/ServiceContext'
 import gql from 'graphql-tag'
 import composeWithJson from 'graphql-compose-json'
 import { schemaComposer } from 'graphql-compose'
-import { makeExecutableSchema } from '@graphql-tools/schema'
-import { buildSchema } from 'type-graphql'
+import { SchemaGenerator } from 'type-graphql/dist/schema/schema-generator'
 /**
  * GraphQL manages query and mutation operations
  */
@@ -21,10 +19,12 @@ export class GraphqlService implements IDataBuilder, IQueryBuilder {
   constructor(){}
 
   async initialize(resolvers: any) {
-    this.schema = await buildSchema({
+   const options ={
       resolvers,
       skipCheck: true
-    })
+    }
+    const schema = await SchemaGenerator.generateFromMetadata({ ...options, resolvers });
+    this.schema = schema
   }
   async query(ctx: ServiceContext, options: any = {}): Promise<any> {
     return execute({
