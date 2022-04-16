@@ -1,16 +1,6 @@
 import { base64 } from 'ethers/lib/utils'
-import { Fido2Lib } from 'fido2-lib'
 import { WebauthnHardwareAuthenticate } from './webauthnServer'
 
-const base64url = require('base64url')
-
-const { Crypto } = require('@peculiar/webcrypto')
-const crypto = new Crypto()
-// @ts-ignore
-if (!global.window) {
-// @ts-ignore
-global.crypto = crypto
-}
 
 export class WebauthnHardwareClient {
   constructor(private server: WebauthnHardwareAuthenticate) {}

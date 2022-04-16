@@ -1,18 +1,12 @@
-
+// @ts-ignore
+window.env ={}
 import { Fido2Lib } from 'fido2-lib'
 
 const base64url = require('base64url');
 
-const { Crypto } = require('@peculiar/webcrypto')
-const crypto = new Crypto()
-// @ts-ignore
-if (!global.window) {
-// @ts-ignore
-global.crypto = crypto
-}
-
 export class WebauthnHardwareAuthenticate {
-  constructor(private fido2: Fido2Lib) {}
+  private fido2: any
+  constructor() {}
 
   initialize(options: { rpId: any; rpName: any; rpIcon: any; }) {
     this.fido2 = new Fido2Lib({
@@ -37,6 +31,7 @@ export class WebauthnHardwareAuthenticate {
         userHandle: undefined,
     } as any
     req.challenge = Buffer.from(registrationOptions.challenge)
+    // @ts-ignore
     req.userHandle = crypto.randomBytes(32)
 
     registrationOptions.user.id = req.userHandle

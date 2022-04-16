@@ -1,7 +1,6 @@
-import { Fido2Lib } from 'fido2-lib';
 export declare class WebauthnHardwareAuthenticate {
     private fido2;
-    constructor(fido2: Fido2Lib);
+    constructor();
     initialize(options: {
         rpId: any;
         rpName: any;
