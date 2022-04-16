@@ -1,5 +1,6 @@
-import { CID } from "multiformats";
-import { Block } from "multiformats/block";
+import { CID } from 'multiformats';
+import { Block } from 'multiformats/block';
+import { Document } from './StorageKind';
 export interface Schemas {
     jsonschema: string;
     graphqls: string;
@@ -14,5 +15,13 @@ export interface BlockValue {
     schemas: Schemas;
     index: any;
     hashtag: any;
+    timestamp: number;
+}
+export declare class DBBlockValue {
+    cid: string;
+    document: Document;
+    topic?: string;
+    index: string;
+    hashtag: string;
     timestamp: number;
 }

@@ -1,8 +1,8 @@
-import Dexie from 'dexie';
 import { DocumentNode } from 'graphql';
+import { ParkyDB } from '../core/db';
 import { BlockValue } from './Blockvalue';
 export interface ServiceContext {
-    db: Dexie;
+    db: ParkyDB;
     id: string;
     state: BlockValue;
     variables: any;

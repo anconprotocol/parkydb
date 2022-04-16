@@ -2,9 +2,11 @@
 import test from 'ava'
 import { bytes } from 'multiformats'
 const c = require('crypto').webcrypto;
+// @ts-ignore
 global.crypto = c
 
 import { ParkyDB } from '../core/db'
+import { defaultResolvers } from '../resolvers';
 import { Simple } from './simple';
 
 const payload = {
@@ -50,8 +52,9 @@ const payload = {
 }
 
 test.beforeEach(async (t) => {
-  const db = new ParkyDB()
+  const db = new ParkyDB('tests')
   await db.initialize({ 
+    graphql: { resolvers: defaultResolvers},
     // Remember these values come from a CLI or UI, DO NOT hardcode when implementing
     withWallet: {
       autoLogin: true,

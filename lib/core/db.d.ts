@@ -21,7 +21,8 @@ export declare class ParkyDB {
     syncTopic: string;
     syncPubsub: any;
     syncPubsubDexie: any;
-    constructor();
+    store: any;
+    constructor(name: string);
     initialize(options: {
         withWallet: any;
         withWeb3?: any;
@@ -29,6 +30,10 @@ export declare class ParkyDB {
         withIpfs?: any;
         wakuconnect?: any;
         enableSync?: any;
+        documentTypes?: any;
+        graphql: {
+            resolvers: any;
+        };
     }): Promise<{
         waku: import("js-waku").Waku;
         connected: void;

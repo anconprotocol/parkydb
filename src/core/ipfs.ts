@@ -6,10 +6,13 @@ export class IPFSService {
    * @param {File} content filelist object
    * @returns {(Object|Promise)} ancon file post response object
    */
-  async uploadFile(content: File) {
+  async uploadFile(
+    content: any,
+  ) {
+    // @ts-ignore
     const body = new FormData()
     body.append('file', content)
-
+    // @ts-ignore
     const ipfsAddRes = await fetch(`${this.rpc}/api/v0/add?pin=true`, {
       body,
       method: 'POST',

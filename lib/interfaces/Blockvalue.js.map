@@ -1,1 +1,1 @@
-{"version":3,"file":"Blockvalue.js","sourceRoot":"","sources":["../../src/interfaces/Blockvalue.ts"],"names":[],"mappings":""}
+{"version":3,"file":"Blockvalue.js","sourceRoot":"","sources":["../../src/interfaces/Blockvalue.ts"],"names":[],"mappings":";;;;;;;;;;;;AAEA,+CAAgD;AAChD,+CAAwC;AAqBxC,IAAa,YAAY,GAAzB,MAAa,YAAY;CAqBxB,CAAA;AAnBC;IADC,oBAAK,EAAE;;yCACI;AAMZ;IADC,oBAAK,EAAE;8BACG,sBAAQ;8CAAA;AAGnB;IADC,oBAAK,EAAE;;2CACM;AAGd;IADC,oBAAK,EAAE;;2CACM;AAGd;IADC,oBAAK,EAAE;;6CACQ;AAGhB;IADC,oBAAK,EAAE;;+CACU;AApBP,YAAY;IADxB,yBAAU,EAAE;GACA,YAAY,CAqBxB;AArBY,oCAAY"}

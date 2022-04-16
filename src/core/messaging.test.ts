@@ -8,6 +8,7 @@ import { BlockValue } from '../interfaces/Blockvalue'
 import { ParkyDB } from './db'
 import { MessagingService } from './messaging'
 import { Simple } from '../wallet/simple'
+import { defaultResolvers } from '../resolvers'
 
 const payload = {
   commitHash: 'xg8pyBr3McqYlUgxAqV0t3s6TRcP+B7MHyPTtyVKMJw=',
@@ -52,9 +53,9 @@ const payload = {
 }
 
 test.beforeEach(async (t) => {
-  const alice = new ParkyDB()
+  const alice = new ParkyDB('tests')
   await alice.initialize({
-    
+    graphql: { resolvers: defaultResolvers},
     // Remember these values come from a CLI or UI, DO NOT hardcode when implementing
     withWallet: {
       autoLogin: true,

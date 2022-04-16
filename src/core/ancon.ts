@@ -53,7 +53,7 @@ export class AnconService {
       body: JSON.stringify(payload),
     }
 
-    // fetch
+    // @ts-ignore
     const rawResponse = await fetch(
       // @ts-ignore
       `${this.rpc}/v0/did`,
@@ -87,7 +87,7 @@ export class AnconService {
       body: JSON.stringify(payload),
     }
 
-    // fetch
+    // @ts-ignore
     const rawResponse = await fetch(
       // @ts-ignore
       `${this.rpc}/v0/dag`,

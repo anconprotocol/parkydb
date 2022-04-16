@@ -5,6 +5,7 @@ const { Crypto } = require('@peculiar/webcrypto')
 const crypto = new Crypto()
 // @ts-ignore
 if (!global.window) {
+  // @ts-ignore
   global.crypto = crypto
 }
 import { CID } from 'blockstore-core/base'
@@ -54,9 +55,11 @@ export class ParkyDB {
   syncTopic: string
   syncPubsub: any
   syncPubsubDexie: any
-  constructor() {
+  store: any
+  constructor(name: string) {
     const db: Dexie | any = new Dexie(
-      'ancon',
+      name,
+      // @ts-ignore
       global.window
         ? {}
         : {
@@ -90,7 +93,11 @@ export class ParkyDB {
     withIpfs?: any
     wakuconnect?: any
     enableSync?: any
+    documentTypes?: any
+    graphql: { resolvers: any }
   }) {
+
+    await this.graphqlService.initialize(options.graphql.resolvers)
     await this.keyringController.load(this.db)
 
     if (options.withWallet) {
@@ -384,7 +391,7 @@ export class ParkyDB {
   async query(options: any) {
     const ctx = {
       ...options,
-      db: this.db,
+      db: this,
     } as ServiceContext
     return this.graphqlService.query(ctx, null)
   }

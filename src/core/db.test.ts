@@ -1,8 +1,10 @@
 import test from 'ava'
+import { defaultResolvers } from '../resolvers'
 
 import { ParkyDB } from './db'
 
 const payload = {
+  kind: 'VerifiableBlock',
   commitHash: 'xg8pyBr3McqYlUgxAqV0t3s6TRcP+B7MHyPTtyVKMJw=',
   contentHash: {
     '/': 'baguqeerahiqryfzwbjc2fn7is4k2uupilwtoxabtb6noifnwxznxszuvrg6a',
@@ -45,8 +47,9 @@ const payload = {
 }
 
 test.beforeEach(async (t) => {
-  const db = new ParkyDB()
+  const db = new ParkyDB('tests')
   await db.initialize({
+    graphql: { resolvers: defaultResolvers},
     // Remember these values come from a CLI or UI, DO NOT hardcode when implementing
     withWallet: {
       password: 'zxcvb',
@@ -72,16 +75,17 @@ test('put', async (t) => {
   //   return () => blocks.where({ cid: '' })
   // });
   const q = await db.query({
-    cid: id,
     query: `
     query{
-       block(cid: "${id}") {
-         network
-         key
-       }
+      block(cid: "${id}"){
+        cid,
+        document{
+          kind
+        }
+      }
     }   
     `,
   })
 
-  t.is(id, 'baguqeera73x5r73wfcwikxqxm6i3chhbvdhymsrekxkef6ejm3ymi4u2e4zq')
+  t.is(q.data.block.cid, 'baguqeerabve7ug2qddskk3mpomdt3xdnhvh53jvmca7qh43p36y5hfoassoq')
 })
