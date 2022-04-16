@@ -76,7 +76,6 @@ export class ParkyDB {
         timestamp`,
     })
 
-
     this.db = db
     this.db.blockdb.hook(
       'creating',
@@ -149,18 +148,17 @@ export class ParkyDB {
       const startTime = new Date()
       // 7 days/week, 24 hours/day, 60min/hour, 60secs/min, 100ms/sec
       startTime.setTime(startTime.getTime() - 7 * 24 * 60 * 60 * 1000)
-      const sync = await this.getTopicStore(
-        [this.syncTopic],
-        {
-          startTime,
-          endTime: new Date(),
-        },
-      )
+      const sync = await this.getTopicStore([this.syncTopic], {
+        startTime,
+        endTime: new Date(),
+      })
 
       sync.subscribe(async (message: any) => {
-        const block: Block<any> = await this.dagService.decodeBlock(decode(message.payload))
+        const { payload } = decode(message.payload)
 
-        await this.put(block.cid, block)
+        const block: Block<any> = await this.dagService.decodeBlock(payload.dag)
+        const has = await this.get(block.cid.toString(), null)
+        if (!has) await this.put(block.cid, block)
       })
     }
     if (options.enableSync && !options.withIpfs && !options.withWeb3) {
@@ -198,7 +196,7 @@ export class ParkyDB {
       if (this.syncPubsubDexie) {
         setTimeout(async () => {
           this.syncPubsubDexie.publish({
-            dag: block.bytes
+            dag: block.bytes,
           })
         }, 1500)
       }
@@ -215,20 +213,18 @@ export class ParkyDB {
 
     const uuid = uuidv4()
     await miniSearch.addAllAsync([{ id: key.toString(), ...value.value }])
-    return this.db.blockdb.put(
-      {
-        cid: key.toString(),
-        uuid,
-        dag: value,
-        document: value.value,
-        schemas: {
-          jsonschema: jsch,
-        },
-        hashtag: mj.hash(value.value),
-        index: JSON.stringify(miniSearch),
-        timestamp: new Date().getTime(),
-      }
-    )
+    return this.db.blockdb.put({
+      cid: key.toString(),
+      uuid,
+      dag: value,
+      document: value.value,
+      schemas: {
+        jsonschema: jsch,
+      },
+      hashtag: mj.hash(value.value),
+      index: JSON.stringify(miniSearch),
+      timestamp: new Date().getTime(),
+    })
   }
 
   /**
