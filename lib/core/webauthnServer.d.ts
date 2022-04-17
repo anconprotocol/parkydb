@@ -9,14 +9,6 @@ export declare class WebauthnHardwareAuthenticate {
         authenticatorRequireResidentKey?: any;
         authenticatorUserVerification?: any;
     }): void;
-    registrationOptions(): Promise<any>;
-    register(origin: any, request: any): Promise<any>;
-    verifyOptions(): Promise<import('fido2-lib').PublicKeyCredentialRequestOptions>;
-    verify(origin: any, verifyReq: {
-        challenge: any;
-        userHandle: any;
-        credential: any;
-        publicKey: any;
-        prevCounter: any;
-    }): Promise<boolean>;
+    registrationOptions(username: string, payload: Uint8Array): Promise<any>;
+    signData(origin: any, credential: any, challenge: any, payload: Uint8Array, uid: Uint8Array): Promise<any>;
 }

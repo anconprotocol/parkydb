@@ -1,18 +1,18 @@
 // @ts-ignore
 
 import { ethers } from 'ethers'
-  // @ts-ignore
+// @ts-ignore
 import { Fido2Lib } from 'fido2-lib'
 import { window } from 'rxjs'
 
 const base64url = require('base64url')
 
-// // @ts-ignore
-// const bufferToBase64 = (buffer) =>
-//   btoa(String.fromCharCode(...new Uint8Array(buffer)))
-// // @ts-ignore
-// const base64ToBuffer = (base64) =>
-//   Uint8Array.from(atob(base64), (c) => c.charCodeAt(0))
+// @ts-ignore
+const bufferToBase64 = (buffer) =>
+  btoa(String.fromCharCode(...new Uint8Array(buffer)))
+// @ts-ignore
+const base64ToBuffer = (base64) =>
+  Uint8Array.from(atob(base64), (c) => c.charCodeAt(0))
 export class WebauthnHardwareAuthenticate {
   private fido2: any
   constructor() {}
@@ -32,8 +32,7 @@ export class WebauthnHardwareAuthenticate {
       rpIcon: options.rpIcon || '',
       challengeSize: 128,
       attestation: options.attestation || 'none',
-      cryptoParams: [-7, -257],
-      // authenticatorAttachment: 'platform',
+      cryptoParams: [-47, -257], // secp256k1 , rsa256
       authenticatorRequireResidentKey:
         options.authenticatorRequireResidentKey || false,
       authenticatorUserVerification:
@@ -41,43 +40,47 @@ export class WebauthnHardwareAuthenticate {
     })
   }
 
-  async registrationOptions(): Promise<any> {
+  async registrationOptions(
+    username: string,
+    payload: Uint8Array,
+  ): Promise<any> {
     const registrationOptions: any = await this.fido2.attestationOptions()
 
     const req = {
       challenge: undefined,
       userHandle: undefined,
     } as any
-    req.challenge = Buffer.from(registrationOptions.challenge)
+    req.challenge = payload
     // @ts-ignore
-    req.userHandle = ethers.utils.randomBytes(32)
-    registrationOptions.user.id = req.userHandle
-    registrationOptions.challenge = Buffer.from(registrationOptions.challenge)
+    registrationOptions.user.id = username
+    registrationOptions.challenge = payload
 
     // // iOS
     // registrationOptions.authenticatorSelection = {
     //   authenticatorAttachment: 'platform',
     // }
     return {
-      ...registrationOptions,
       ...req,
+      ...registrationOptions,
     }
   }
 
-  async register(origin: any, request: any): Promise<any> {
-    const { credential } = request
-
-    const challenge = new Uint8Array(request.challenge).buffer
-    credential.rawId = new Uint8Array(
+  async signData(
+    origin: any,
+    credential: any,
+    challenge: any,
+    payload: Uint8Array,
+    uid: Uint8Array,
+  ): Promise<any> {
+    const updatedCreds = { ...credential, response: {} }
+    updatedCreds.rawId = new Uint8Array(
       Buffer.from(credential.rawId, 'base64'),
     ).buffer
-    credential.response.attestationObject = base64url.decode(
+    updatedCreds.response.attestationObject = base64url.encode(
       credential.response.attestationObject,
-      'base64',
     )
-    credential.response.clientDataJSON = base64url.decode(
+    updatedCreds.response.clientDataJSON = base64url.encode(
       credential.response.clientDataJSON,
-      'base64',
     )
 
     const attestationExpectations = {
@@ -87,74 +90,40 @@ export class WebauthnHardwareAuthenticate {
     }
 
     try {
-      const regResult = await this.fido2.attestationResult(
-        credential,
-        attestationExpectations as any,
+      const attestationResult = await this.fido2.attestationResult(
+        updatedCreds,
+        attestationExpectations,
       )
+      const { authnrData, clientData, audit } = attestationResult
+      const publicKey = authnrData.get('credentialPublicKeyPem')
+      const prevCounter = authnrData.get('counter')
 
-      request.publicKey = regResult.authnrData.get('credentialPublicKeyPem')
-      request.prevCounter = regResult.authnrData.get('counter')
+      const assertionOptions = await this.fido2.assertionOptions()
 
-      return request
+      assertionOptions.challenge = ethers.utils.arrayify(
+        ethers.utils.sha256(payload),
+      ).buffer
+      assertionOptions.allowCredentials = [
+        {
+          id: new Uint8Array(credential.rawId).buffer,
+          type: 'public-key',
+        },
+      ]
+      // @ts-ignore
+      const clientAssertion = await navigator.credentials.get({
+        publicKey: assertionOptions,
+      })
+      return {
+        authnrData,
+        clientData,
+        clientDataJSON: (bufferToBase64(clientAssertion.response.clientDataJSON)),
+        authenticatorData: (bufferToBase64(clientAssertion.response.authenticatorDatN)),
+        signature: (bufferToBase64(clientAssertion.response.signature)),
+        audit,
+    };
+
     } catch (e) {
       throw e
-    }
-  }
-
-  async verifyOptions(): 
-  // @ts-ignore
-  Promise<
-    import('fido2-lib').PublicKeyCredentialRequestOptions
-  > {
-    const authnOptions = await this.fido2.assertionOptions()
-
-    // const challenge = Buffer.from(authnOptions.challenge)
-
-    authnOptions.challenge = Buffer.from(authnOptions.challenge)
-
-    return authnOptions
-  }
-
-  async verify(
-    origin: any,
-    verifyReq: {
-      challenge: any
-      userHandle: any
-      credential: any
-      publicKey: any
-      prevCounter: any
-    },
-  ): Promise<boolean> {
-    const { credential } = verifyReq
-
-    credential.rawId = new Uint8Array(
-      Buffer.from(credential.rawId, 'base64'),
-    ).buffer
-
-    const challenge = new Uint8Array(verifyReq.challenge).buffer
-    const { publicKey, prevCounter } = verifyReq
-
-    if (publicKey === 'undefined' || prevCounter === undefined) {
-      return false
-    } else {
-      const assertionExpectations = {
-        challenge,
-        origin,
-        factor: 'either',
-        publicKey,
-        prevCounter,
-        userHandle: new Uint8Array(Buffer.from(verifyReq.userHandle, 'base64'))
-          .buffer, //new Uint8Array(Buffer.from(verifyReq.userHandle.data)).buffer
-      } as any
-
-      try {
-        await this.fido2.assertionResult(credential, assertionExpectations) // will throw on error
-
-        return true
-      } catch (e) {
-        console.log('error', e)
-        return false
-      }
     }
   }
 }
