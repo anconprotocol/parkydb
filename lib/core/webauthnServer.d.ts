@@ -5,10 +5,13 @@ export declare class WebauthnHardwareAuthenticate {
         rpId: any;
         rpName: any;
         rpIcon: any;
+        attestation: any;
+        authenticatorRequireResidentKey: any;
+        authenticatorUserVerification: any;
     }): void;
     registrationOptions(): Promise<any>;
     register(origin: any, request: any): Promise<any>;
-    verifyOptions(): Promise<import("fido2-lib").PublicKeyCredentialRequestOptions>;
+    verifyOptions(): Promise<import('fido2-lib').PublicKeyCredentialRequestOptions>;
     verify(origin: any, verifyReq: {
         challenge: any;
         userHandle: any;

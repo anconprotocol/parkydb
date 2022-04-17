@@ -1,25 +1,42 @@
 // @ts-ignore
-window.env ={}
+
+import { ethers } from 'ethers'
 import { Fido2Lib } from 'fido2-lib'
+import { window } from 'rxjs'
 
-const base64url = require('base64url');
+const base64url = require('base64url')
 
+// @ts-ignore
+const bufferToBase64 = (buffer) =>
+  btoa(String.fromCharCode(...new Uint8Array(buffer)))
+// @ts-ignore
+const base64ToBuffer = (base64) =>
+  Uint8Array.from(atob(base64), (c) => c.charCodeAt(0))
 export class WebauthnHardwareAuthenticate {
   private fido2: any
   constructor() {}
 
-  initialize(options: { rpId: any; rpName: any; rpIcon: any; }) {
+  initialize(options: {
+    rpId: any
+    rpName: any
+    rpIcon: any
+    attestation: any
+    authenticatorRequireResidentKey: any
+    authenticatorUserVerification: any
+  }) {
     this.fido2 = new Fido2Lib({
       timeout: 60000,
-      rpId: options.rpId || 'parkydb',
-      rpName: options.rpName || 'ParkyDB',
+      rpId: options.rpId || 'localhost',
+      rpName: options.rpName || 'localhost',
       rpIcon: options.rpIcon || '',
       challengeSize: 128,
-      attestation: 'none',
+      attestation: options.attestation || 'none',
       cryptoParams: [-7, -257],
-      authenticatorAttachment: 'platform',
-      authenticatorRequireResidentKey: false,
-      authenticatorUserVerification: 'required',
+      // authenticatorAttachment: 'platform',
+      authenticatorRequireResidentKey:
+        options.authenticatorRequireResidentKey || false,
+      authenticatorUserVerification:
+        options.authenticatorUserVerification || 'required',
     })
   }
 
@@ -27,25 +44,26 @@ export class WebauthnHardwareAuthenticate {
     const registrationOptions: any = await this.fido2.attestationOptions()
 
     const req = {
-        challenge: undefined,
-        userHandle: undefined,
+      challenge: undefined,
+      userHandle: undefined,
     } as any
     req.challenge = Buffer.from(registrationOptions.challenge)
     // @ts-ignore
-    req.userHandle = crypto.randomBytes(32)
-
+    req.userHandle = ethers.utils.randomBytes(32)
     registrationOptions.user.id = req.userHandle
     registrationOptions.challenge = Buffer.from(registrationOptions.challenge)
 
-    // iOS
-    registrationOptions.authenticatorSelection = {
-      authenticatorAttachment: 'platform',
+    // // iOS
+    // registrationOptions.authenticatorSelection = {
+    //   authenticatorAttachment: 'platform',
+    // }
+    return {
+      ...registrationOptions,
+      ...req,
     }
-
-    return req
   }
 
-  async register(origin: any,request: any): Promise<any> {
+  async register(origin: any, request: any): Promise<any> {
     const { credential } = request
 
     const challenge = new Uint8Array(request.challenge.data).buffer
@@ -82,7 +100,9 @@ export class WebauthnHardwareAuthenticate {
     }
   }
 
-  async verifyOptions(): Promise<import("fido2-lib").PublicKeyCredentialRequestOptions> {
+  async verifyOptions(): Promise<
+    import('fido2-lib').PublicKeyCredentialRequestOptions
+  > {
     const authnOptions = await this.fido2.assertionOptions()
 
     // const challenge = Buffer.from(authnOptions.challenge)
@@ -92,7 +112,16 @@ export class WebauthnHardwareAuthenticate {
     return authnOptions
   }
 
-  async verify(origin: any,verifyReq: { challenge: any; userHandle: any; credential: any; publicKey: any; prevCounter: any; }): Promise<boolean> {
+  async verify(
+    origin: any,
+    verifyReq: {
+      challenge: any
+      userHandle: any
+      credential: any
+      publicKey: any
+      prevCounter: any
+    },
+  ): Promise<boolean> {
     const { credential } = verifyReq
 
     credential.rawId = new Uint8Array(
@@ -111,9 +140,8 @@ export class WebauthnHardwareAuthenticate {
         factor: 'either',
         publicKey,
         prevCounter,
-        userHandle: new Uint8Array(
-          Buffer.from(verifyReq.userHandle, 'base64'),
-        ).buffer, //new Uint8Array(Buffer.from(verifyReq.userHandle.data)).buffer
+        userHandle: new Uint8Array(Buffer.from(verifyReq.userHandle, 'base64'))
+          .buffer, //new Uint8Array(Buffer.from(verifyReq.userHandle.data)).buffer
       } as any
 
       try {
