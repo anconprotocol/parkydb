@@ -1,3 +1,4 @@
+import base64url from 'base64url'
 import { base64 } from 'ethers/lib/utils'
 import { WebauthnHardwareAuthenticate } from './webauthnServer'
 // @ts-ignore
@@ -16,10 +17,10 @@ export class WebauthnHardwareClient {
       const challenge = credentialCreationOptions.challenge
 
       credentialCreationOptions.challenge = new Uint8Array(
-        credentialCreationOptions.challenge.data,
+        credentialCreationOptions.challenge,
       )
       credentialCreationOptions.user.id = new Uint8Array(
-        credentialCreationOptions.user.id.data,
+        credentialCreationOptions.user.id,
       )
       credentialCreationOptions.user.name = username
       credentialCreationOptions.user.displayName = displayName
@@ -29,15 +30,15 @@ export class WebauthnHardwareClient {
         publicKey: credentialCreationOptions,
       })
 
-      const credentialId = bufferToBase64(credential.rawId)
+      const credentialId = base64url.encode(credential.rawId)
 
       const data = {
         rawId: credentialId,
         response: {
-          attestationObject: bufferToBase64(
+          attestationObject: base64url.encode(
             credential.response.attestationObject,
           ),
-          clientDataJSON: bufferToBase64(credential.response.clientDataJSON),
+          clientDataJSON: base64url.encode(credential.response.clientDataJSON),
           id: credential.id,
           type: credential.type,
         },

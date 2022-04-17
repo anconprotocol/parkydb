@@ -5,9 +5,9 @@ export declare class WebauthnHardwareAuthenticate {
         rpId: any;
         rpName: any;
         rpIcon: any;
-        attestation: any;
-        authenticatorRequireResidentKey: any;
-        authenticatorUserVerification: any;
+        attestation?: any;
+        authenticatorRequireResidentKey?: any;
+        authenticatorUserVerification?: any;
     }): void;
     registrationOptions(): Promise<any>;
     register(origin: any, request: any): Promise<any>;

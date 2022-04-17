@@ -1,17 +1,18 @@
 // @ts-ignore
 
 import { ethers } from 'ethers'
+  // @ts-ignore
 import { Fido2Lib } from 'fido2-lib'
 import { window } from 'rxjs'
 
 const base64url = require('base64url')
 
-// @ts-ignore
-const bufferToBase64 = (buffer) =>
-  btoa(String.fromCharCode(...new Uint8Array(buffer)))
-// @ts-ignore
-const base64ToBuffer = (base64) =>
-  Uint8Array.from(atob(base64), (c) => c.charCodeAt(0))
+// // @ts-ignore
+// const bufferToBase64 = (buffer) =>
+//   btoa(String.fromCharCode(...new Uint8Array(buffer)))
+// // @ts-ignore
+// const base64ToBuffer = (base64) =>
+//   Uint8Array.from(atob(base64), (c) => c.charCodeAt(0))
 export class WebauthnHardwareAuthenticate {
   private fido2: any
   constructor() {}
@@ -20,9 +21,9 @@ export class WebauthnHardwareAuthenticate {
     rpId: any
     rpName: any
     rpIcon: any
-    attestation: any
-    authenticatorRequireResidentKey: any
-    authenticatorUserVerification: any
+    attestation?: any
+    authenticatorRequireResidentKey?: any
+    authenticatorUserVerification?: any
   }) {
     this.fido2 = new Fido2Lib({
       timeout: 60000,
@@ -66,7 +67,7 @@ export class WebauthnHardwareAuthenticate {
   async register(origin: any, request: any): Promise<any> {
     const { credential } = request
 
-    const challenge = new Uint8Array(request.challenge.data).buffer
+    const challenge = new Uint8Array(request.challenge).buffer
     credential.rawId = new Uint8Array(
       Buffer.from(credential.rawId, 'base64'),
     ).buffer
@@ -100,7 +101,9 @@ export class WebauthnHardwareAuthenticate {
     }
   }
 
-  async verifyOptions(): Promise<
+  async verifyOptions(): 
+  // @ts-ignore
+  Promise<
     import('fido2-lib').PublicKeyCredentialRequestOptions
   > {
     const authnOptions = await this.fido2.assertionOptions()
@@ -128,7 +131,7 @@ export class WebauthnHardwareAuthenticate {
       Buffer.from(credential.rawId, 'base64'),
     ).buffer
 
-    const challenge = new Uint8Array(verifyReq.challenge.data).buffer
+    const challenge = new Uint8Array(verifyReq.challenge).buffer
     const { publicKey, prevCounter } = verifyReq
 
     if (publicKey === 'undefined' || prevCounter === undefined) {
