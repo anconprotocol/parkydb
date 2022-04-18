@@ -32,7 +32,7 @@ export class AnconService {
   ) {
     // encode the pub key
     const base58Encode = ethers.utils.base58.encode(pubkey)
-    let signer = this.sign
+    let signer = customSigner || this.sign
     const messageDid: any =
       message ||
       `#Welcome to Ancon Protocol!
@@ -44,9 +44,7 @@ export class AnconService {
         This request will not trigger a blockchain transaction or cost any gas fees.
         by signing this message you accept the terms and conditions of Ancon Protocol
         `
-    if (!!customSigner) {
-      signer = customSigner
-    }
+
     const { signature, digest } = await signer(messageDid)
 
     const payload = {
@@ -77,10 +75,7 @@ export class AnconService {
     options: { topic: string; message: string },
     customSigner?: (message: any) => Promise<Signer>,
   ) {
-    let signer = this.sign    
-    if (!!customSigner) {
-      signer = customSigner
-    }
+    let signer = customSigner || this.sign
     const { signature, digest } = await signer(JSON.stringify(options.message))
 
     let payload = {

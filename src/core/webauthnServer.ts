@@ -1,10 +1,14 @@
 // @ts-ignore
 
+import { decode } from 'cbor-x'
 import { ethers } from 'ethers'
 // @ts-ignore
 import { Fido2Lib } from 'fido2-lib'
 // @ts-ignore
-import {  parseAuthenticatorData,parseClientResponse,} from 'fido2-lib/lib/parser'
+import {
+  parseAuthenticatorData,
+  parseClientResponse,
+} from 'fido2-lib/lib/parser'
 import { isMobile } from 'mobile-device-detect'
 
 const base64url = require('base64url')
@@ -74,7 +78,7 @@ export class WebauthnHardwareAuthenticate {
     challenge: any,
     payload: Uint8Array,
     uid: Uint8Array,
-    emitPublicKey: (args:any)=>Promise<any>
+    emitPublicKey: (args: any) => Promise<any>,
   ): Promise<any> {
     const updatedCreds = { ...credential, response: {} }
     updatedCreds.rawId = new Uint8Array(
@@ -99,10 +103,18 @@ export class WebauthnHardwareAuthenticate {
         attestationExpectations,
       )
       const { authnrData, clientData, audit } = attestationResult
-      const publicKey = authnrData.get('credentialPublicKeyPem')
+      const publicKey = authnrData.get('credentialPublicKeyCose')
+      const publicKeyJwk = authnrData.get('credentialPublicKeyJwk')
       const prevCounter = authnrData.get('counter')
 
-      await emitPublicKey({ publicKey, prevCounter });
+      if (!!emitPublicKey)
+        await emitPublicKey({
+          publicKey: new Uint8Array(publicKey),
+          publicKeyJwk,
+          prevCounter,
+          authnrData,
+          clientData,
+        })
 
       const assertionOptions = await this.fido2.assertionOptions()
 
@@ -128,6 +140,7 @@ export class WebauthnHardwareAuthenticate {
         authenticatorData,
         signature: bufferToBase64(clientAssertion.response.signature),
         audit,
+        raw: clientAssertion,
       }
     } catch (e) {
       throw e

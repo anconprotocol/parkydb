@@ -128,7 +128,6 @@ export class ParkyDB {
     if (options.withAncon) {
       this.anconService = new AnconService(
         options.withAncon.walletconnectProvider,
-        //       options.withAncon.pubkey,
         options.withAncon.api,
       )
     }
@@ -139,7 +138,7 @@ export class ParkyDB {
         options.withIpfs.api,
       )
     }
-    // options.withWallet.password = undefined
+
     // @ts-ignore
     const m = await this.messagingService.bootstrap(options.wakuconnect)
     if (options.enableSync && options.withIpfs && options.withWeb3) {
