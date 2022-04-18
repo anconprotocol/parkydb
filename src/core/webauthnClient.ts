@@ -16,6 +16,7 @@ export class WebauthnHardwareClient {
     displayName: string,
     payload: Uint8Array,
     emitPublicKey: (args: any) => Promise<any>,
+    keepSigning: boolean = true,
   ) {
     try {
       const credentialCreationOptions = await this.server.registrationOptions(
@@ -34,15 +35,7 @@ export class WebauthnHardwareClient {
       credentialCreationOptions.user.displayName = displayName
 
       let credential
-      const creds = await this.db.db.fido2keys.get({ id: 1 })
-      if (!!creds) {
-        credential = {
-            rawId: creds.rawId,
-            response: {
-              ...creds.credential.response,
-            },
-          }
-      } else {
+      if (keepSigning) {
         // @ts-ignore
         credential = await navigator.credentials.create({
           publicKey: credentialCreationOptions,
@@ -58,19 +51,45 @@ export class WebauthnHardwareClient {
         updatedCreds.response.clientDataJSON = base64url.encode(
           credential.response.clientDataJSON,
         )
-        await this.db.db.fido2keys.put(
-          {
-            id: 1,
-            credential: {
-              ...updatedCreds,
-            },
-            rawId: credential.rawId,
-          },
-          1,
-        )
         credential = updatedCreds
-      }
+      } else {
+        const creds = await this.db.db.fido2keys.get({ id: 1 })
+        if (!!creds) {
+          credential = {
+            rawId: creds.rawId,
+            response: {
+              ...creds.credential.response,
+            },
+          }
+        } else {
+          // @ts-ignore
+          credential = await navigator.credentials.create({
+            publicKey: credentialCreationOptions,
+          })
 
+          const updatedCreds = { ...credential, response: {} }
+          updatedCreds.rawId = new Uint8Array(
+            Buffer.from(credential.rawId, 'base64'),
+          ).buffer
+          updatedCreds.response.attestationObject = base64url.encode(
+            credential.response.attestationObject,
+          )
+          updatedCreds.response.clientDataJSON = base64url.encode(
+            credential.response.clientDataJSON,
+          )
+          await this.db.db.fido2keys.put(
+            {
+              id: 1,
+              credential: {
+                ...updatedCreds,
+              },
+              rawId: credential.rawId,
+            },
+            1,
+          )
+          credential = updatedCreds
+        }
+      }
       const registerResponse = await this.server.signData(
         origin,
         credential,
