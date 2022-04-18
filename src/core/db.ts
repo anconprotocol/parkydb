@@ -69,6 +69,7 @@ export class ParkyDB {
     )
 
     db.version(1).stores({
+      fido2keys:`++id,rawId`,
       keyring: `id`,
       history: `&cid, refs`,
       blockdb: `++id,&cid,

@@ -5,10 +5,7 @@ import { ethers } from 'ethers'
 // @ts-ignore
 import { Fido2Lib } from 'fido2-lib'
 // @ts-ignore
-import {
-  parseAuthenticatorData,
-  parseClientResponse,
-} from 'fido2-lib/lib/parser'
+import {  parseAuthenticatorData,parseClientResponse,} from 'fido2-lib/lib/parser'
 import { isMobile } from 'mobile-device-detect'
 
 const base64url = require('base64url')
@@ -74,22 +71,13 @@ export class WebauthnHardwareAuthenticate {
 
   async signData(
     origin: any,
-    credential: any,
+    updatedCreds: any,
     challenge: any,
     payload: Uint8Array,
     uid: Uint8Array,
     emitPublicKey: (args: any) => Promise<any>,
   ): Promise<any> {
-    const updatedCreds = { ...credential, response: {} }
-    updatedCreds.rawId = new Uint8Array(
-      Buffer.from(credential.rawId, 'base64'),
-    ).buffer
-    updatedCreds.response.attestationObject = base64url.encode(
-      credential.response.attestationObject,
-    )
-    updatedCreds.response.clientDataJSON = base64url.encode(
-      credential.response.clientDataJSON,
-    )
+
 
     const attestationExpectations = {
       challenge,
@@ -123,7 +111,7 @@ export class WebauthnHardwareAuthenticate {
       ).buffer
       assertionOptions.allowCredentials = [
         {
-          id: new Uint8Array(credential.rawId).buffer,
+          id: updatedCreds.rawId,
           type: 'public-key',
         },
       ]

@@ -11,5 +11,5 @@ export declare class WebauthnHardwareAuthenticate {
         cryptoParams?: any;
     }): void;
     registrationOptions(username: string, payload: Uint8Array): Promise<any>;
-    signData(origin: any, credential: any, challenge: any, payload: Uint8Array, uid: Uint8Array, emitPublicKey: (args: any) => Promise<any>): Promise<any>;
+    signData(origin: any, updatedCreds: any, challenge: any, payload: Uint8Array, uid: Uint8Array, emitPublicKey: (args: any) => Promise<any>): Promise<any>;
 }
