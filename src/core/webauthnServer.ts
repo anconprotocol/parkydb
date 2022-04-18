@@ -3,7 +3,9 @@
 import { ethers } from 'ethers'
 // @ts-ignore
 import { Fido2Lib } from 'fido2-lib'
-import { window } from 'rxjs'
+// @ts-ignore
+import {  parseAuthenticatorData,parseClientResponse,} from 'fido2-lib/lib/parser'
+import { isMobile } from 'mobile-device-detect'
 
 const base64url = require('base64url')
 
@@ -32,7 +34,7 @@ export class WebauthnHardwareAuthenticate {
       rpIcon: options.rpIcon || '',
       challengeSize: 128,
       attestation: options.attestation || 'none',
-      cryptoParams: [-47, -257], // secp256k1 , rsa256
+      cryptoParams: [-7, -8, -47, -257], // secp256k1, eddsa, ecdsa , rsa256
       authenticatorRequireResidentKey:
         options.authenticatorRequireResidentKey || false,
       authenticatorUserVerification:
@@ -55,10 +57,10 @@ export class WebauthnHardwareAuthenticate {
     registrationOptions.user.id = username
     registrationOptions.challenge = payload
 
-    // // iOS
-    // registrationOptions.authenticatorSelection = {
-    //   authenticatorAttachment: 'platform',
-    // }
+    if (isMobile)
+      registrationOptions.authenticatorSelection = {
+        authenticatorAttachment: 'platform',
+      }
     return {
       ...req,
       ...registrationOptions,
@@ -113,15 +115,16 @@ export class WebauthnHardwareAuthenticate {
       const clientAssertion = await navigator.credentials.get({
         publicKey: assertionOptions,
       })
+      const clientDataJSON = parseClientResponse(clientAssertion)
+      const authenticatorData = parseAuthenticatorData(
+        clientAssertion.response.authenticatorData,
+      )
       return {
-        authnrData,
-        clientData,
-        clientDataJSON: (bufferToBase64(clientAssertion.response.clientDataJSON)),
-        authenticatorData: (bufferToBase64(clientAssertion.response.authenticatorDatN)),
-        signature: (bufferToBase64(clientAssertion.response.signature)),
+        clientDataJSON,
+        authenticatorData,
+        signature: bufferToBase64(clientAssertion.response.signature),
         audit,
-    };
-
+      }
     } catch (e) {
       throw e
     }

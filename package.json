@@ -1,6 +1,6 @@
 {
   "name": "parkydb",
-  "version": "1.0.22",
+  "version": "1.0.25",
   "description": "",
   "main": "lib/index.js",
   "scripts": {
@@ -49,6 +49,7 @@
     "jsonschema-protobuf": "^1.0.2",
     "merkle-json": "^2.0.0",
     "minisearch": "^4.0.3",
+    "mobile-device-detect": "^0.4.3",
     "multiformats": "^9.6.4",
     "protobufjs": "^6.11.2",
     "reflect-metadata": "^0.1.13",
