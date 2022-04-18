@@ -74,7 +74,7 @@ export class AnconService {
     options: { topic: string; message: string },
     customSigner?: (message: any) => Promise<Signer>,
   ) {
-    let signer = customSigner || this.sign
+    let signer = customSigner || this.sign.bind(this)
     const { signature, digest } = await signer(JSON.stringify(options.message))
 
     let payload = {
