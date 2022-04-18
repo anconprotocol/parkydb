@@ -6,9 +6,18 @@ import { WebauthnHardwareAuthenticate } from './webauthnServer'
 export class WebauthnHardwareClient {
   constructor(private server: WebauthnHardwareAuthenticate) {}
 
-  async register(origin: any, username: string, displayName: string, payload: Uint8Array) {
+  async register(
+    origin: any,
+    username: string,
+    displayName: string,
+    payload: Uint8Array,
+    emitPublicKey: (args:any)=>Promise<any>
+  ) {
     try {
-      const credentialCreationOptions = await this.server.registrationOptions(username, payload)
+      const credentialCreationOptions = await this.server.registrationOptions(
+        username,
+        payload,
+      )
       const challenge = credentialCreationOptions.challenge
 
       credentialCreationOptions.challenge = new Uint8Array(
@@ -25,31 +34,19 @@ export class WebauthnHardwareClient {
         publicKey: credentialCreationOptions,
       })
 
-      // const credentialId = bufferToBase64(credential.rawId)
-
-      // const data = {
-      //   rawId: credentialId,
-      //   response: {
-      //     attestationObject: base64url.encode(
-      //       credential.response.attestationObject,
-      //     ),
-      //     clientDataJSON: base64url.encode(credential.response.clientDataJSON),
-      //     id: credential.id,
-      //     type: credential.type,
-      //   },
-      // }
       const registerResponse = await this.server.signData(
         origin,
         credential,
         challenge,
-       arrayify(ethers.utils.sha256(payload)),
+        arrayify(ethers.utils.sha256(payload)),
         credentialCreationOptions.user.id,
+        emitPublicKey,
       )
-      return { ...registerResponse, }
+      return { ...registerResponse }
     } catch (e) {
       // @ts-ignore
       alert(e.message)
       console.error(e)
     }
   }
- }
+}

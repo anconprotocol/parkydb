@@ -1,15 +1,20 @@
 import WalletConnectProvider from '@walletconnect/web3-provider';
+interface Signer {
+    signature: string;
+    digest?: string;
+}
 export declare class AnconService {
     private provider;
     private rpc;
     constructor(provider: WalletConnectProvider, rpc: string);
-    sign(data: any): Promise<{
-        digest: string;
-        signature: any;
-    }>;
-    createDid(pubkey: any): Promise<any>;
-    createDagBlock(options: {
+    sign(data: any): Promise<Signer>;
+    createDid(did: {
+        ethrdid?: string;
+        did?: string;
+    }, pubkey: any, message?: any, customSigner?: (message: any) => Promise<Signer>): Promise<any>;
+    createDagBlock(from: string, options: {
         topic: string;
         message: string;
-    }): Promise<any>;
+    }, customSigner?: (message: any) => Promise<Signer>): Promise<any>;
 }
+export {};

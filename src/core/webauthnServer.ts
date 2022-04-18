@@ -26,6 +26,7 @@ export class WebauthnHardwareAuthenticate {
     attestation?: any
     authenticatorRequireResidentKey?: any
     authenticatorUserVerification?: any
+    cryptoParams?: any
   }) {
     this.fido2 = new Fido2Lib({
       timeout: 60000,
@@ -34,7 +35,7 @@ export class WebauthnHardwareAuthenticate {
       rpIcon: options.rpIcon || '',
       challengeSize: 128,
       attestation: options.attestation || 'none',
-      cryptoParams: [-7, -8, -47, -257], // secp256k1, eddsa, ecdsa , rsa256
+      cryptoParams: options.cryptoParams || [-7, -8, -47, -257], // secp256k1, eddsa, ecdsa , rsa256
       authenticatorRequireResidentKey:
         options.authenticatorRequireResidentKey || false,
       authenticatorUserVerification:
@@ -73,6 +74,7 @@ export class WebauthnHardwareAuthenticate {
     challenge: any,
     payload: Uint8Array,
     uid: Uint8Array,
+    emitPublicKey: (args:any)=>Promise<any>
   ): Promise<any> {
     const updatedCreds = { ...credential, response: {} }
     updatedCreds.rawId = new Uint8Array(
@@ -99,6 +101,8 @@ export class WebauthnHardwareAuthenticate {
       const { authnrData, clientData, audit } = attestationResult
       const publicKey = authnrData.get('credentialPublicKeyPem')
       const prevCounter = authnrData.get('counter')
+
+      await emitPublicKey({ publicKey, prevCounter });
 
       const assertionOptions = await this.fido2.assertionOptions()
 

@@ -1,13 +1,15 @@
 import { ethers } from 'ethers'
 import WalletConnectProvider from '@walletconnect/web3-provider'
 
-export class AnconService {
-  constructor(
-    private provider: WalletConnectProvider,
-    private rpc: string,
-  ) {}
+interface Signer {
+  signature: string
+  digest?: string
+}
 
-  async sign(data: any) {
+export class AnconService {
+  constructor(private provider: WalletConnectProvider, private rpc: string) {}
+
+  async sign(data: any): Promise<Signer> {
     // sign message {signature, digest / hash, }
     const b = ethers.utils.hexlify(ethers.utils.toUtf8Bytes(data))
 
@@ -22,11 +24,18 @@ export class AnconService {
 
     return { digest: b, signature }
   }
-  async createDid(pubkey: any) {
+  async createDid(
+    did: { ethrdid?: string; did?: string },
+    pubkey: any,
+    message?: any,
+    customSigner?: (message: any) => Promise<Signer>,
+  ) {
     // encode the pub key
     const base58Encode = ethers.utils.base58.encode(pubkey)
-
-    const message = `#Welcome to Ancon Protocol!
+    let signer = this.sign
+    const messageDid: any =
+      message ||
+      `#Welcome to Ancon Protocol!
     
         For more information read the docs https://anconprotocol.github.io/docs/
     
@@ -35,13 +44,13 @@ export class AnconService {
         This request will not trigger a blockchain transaction or cost any gas fees.
         by signing this message you accept the terms and conditions of Ancon Protocol
         `
-    const { signature, digest } = await this.sign(
-      message,
-    )
-    const web3provider = new ethers.providers.Web3Provider(this.provider)
-    const network = await web3provider.getNetwork()
+    if (!!customSigner) {
+      signer = customSigner
+    }
+    const { signature, digest } = await signer(messageDid)
+
     const payload = {
-      ethrdid: `did:ethr:${network.name}:${this.provider.accounts[0]}`,
+      ...did,
       pub: base58Encode,
       signature: signature,
       message: message,
@@ -63,21 +72,26 @@ export class AnconService {
     return rawResponse.json()
   }
 
-  async createDagBlock(options: { topic: string; message: string }) {
-    const { signature, digest } = await this.sign(
-      JSON.stringify(options.message),
-    )
-    const web3provider = new ethers.providers.Web3Provider(this.provider)
-    const network = await web3provider.getNetwork()
+  async createDagBlock(
+    from: string,
+    options: { topic: string; message: string },
+    customSigner?: (message: any) => Promise<Signer>,
+  ) {
+    let signer = this.sign    
+    if (!!customSigner) {
+      signer = customSigner
+    }
+    const { signature, digest } = await signer(JSON.stringify(options.message))
+
     let payload = {
       path: '/',
-      from: `did:ethr:${network.name}:${this.provider.accounts[0]}`,
+      from,
       signature,
-//      topic: options.topic,
+      //      topic: options.topic,
       data: options.message,
     } as any
-      
-    if (options.topic){
+
+    if (options.topic) {
       payload.topic = options.topic
     }
 
