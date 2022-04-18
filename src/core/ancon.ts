@@ -32,9 +32,8 @@ export class AnconService {
   ) {
     // encode the pub key
     const base58Encode = ethers.utils.base58.encode(pubkey)
-    let signer = customSigner || this.sign
+    let signer = customSigner || this.sign.bind(this)
     const messageDid: any =
-      message ||
       `#Welcome to Ancon Protocol!
     
         For more information read the docs https://anconprotocol.github.io/docs/
@@ -45,7 +44,7 @@ export class AnconService {
         by signing this message you accept the terms and conditions of Ancon Protocol
         `
 
-    const { signature, digest } = await signer(messageDid)
+    const { signature, digest } = await signer(message || messageDid)
 
     const payload = {
       ...did,
