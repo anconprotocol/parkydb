@@ -66,5 +66,5 @@ export declare class ParkyDB {
     queryBlocks$(fn: (blocks: Table) => () => unknown): Promise<import("dexie").Observable<unknown>>;
     getBlocksByTableName$(tableName: string, fn: (table: Table) => () => unknown): Promise<import("dexie").Observable<unknown>>;
     query(options: any): Promise<any>;
-    get graphqlSchema(): import("graphql").GraphQLSchema;
+    get graphqlSchema(): any;
 }

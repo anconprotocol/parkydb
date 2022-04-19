@@ -1,8 +1,4 @@
-import {
-  execute,
-  GraphQLObjectType,
-  GraphQLSchema,
-} from 'graphql'
+import { execute, GraphQLObjectType, GraphQLSchema } from 'graphql'
 import { IDataBuilder } from '../interfaces/IBuilder'
 import { IQueryBuilder } from '../interfaces/IQuery'
 import { ServiceContext } from '../interfaces/ServiceContext'
@@ -15,16 +11,22 @@ import { SchemaGenerator } from 'type-graphql/dist/schema/schema-generator'
  */
 export class GraphqlService implements IDataBuilder, IQueryBuilder {
   schema!: GraphQLSchema
-  
-  constructor(){}
+  sdl: any
+
+  constructor() {}
 
   async initialize(resolvers: any) {
-   const options ={
+    const options = {
       resolvers,
-      skipCheck: true
+      skipCheck: true,
     }
-    const schema = await SchemaGenerator.generateFromMetadata({ ...options, resolvers });
+    const schema = await SchemaGenerator.generateFromMetadata({
+      ...options,
+      resolvers,
+    })
     this.schema = schema
+
+    this.sdl = schemaComposer.merge(this.schema).toSDL()
   }
   async query(ctx: ServiceContext, options: any = {}): Promise<any> {
     return execute({
@@ -38,7 +40,6 @@ export class GraphqlService implements IDataBuilder, IQueryBuilder {
       `,
     })
   }
-
 
   // @deprecated
   createSchema(blockType: GraphQLObjectType<any, any>) {
@@ -54,12 +55,16 @@ export class GraphqlService implements IDataBuilder, IQueryBuilder {
       },
     })
 
-    return (schemaComposer.buildSchema().toConfig())
+    return schemaComposer.buildSchema().toConfig()
   }
 
   // @deprecated
   async build(value: object) {
     const typedValue = composeWithJson('Block', value)
     return this.createSchema(typedValue.getType())
+  }
+
+  getSDL() {
+    return this.sdl
   }
 }

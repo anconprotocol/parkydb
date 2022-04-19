@@ -397,6 +397,6 @@ export class ParkyDB {
   }
 
   get graphqlSchema() {
-    return this.graphqlService.schema
+    return this.graphqlService.getSDL()
   }
 }

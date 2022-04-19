@@ -4,6 +4,7 @@ import { IQueryBuilder } from '../interfaces/IQuery';
 import { ServiceContext } from '../interfaces/ServiceContext';
 export declare class GraphqlService implements IDataBuilder, IQueryBuilder {
     schema: GraphQLSchema;
+    sdl: any;
     constructor();
     initialize(resolvers: any): Promise<void>;
     query(ctx: ServiceContext, options?: any): Promise<any>;
@@ -21,4 +22,5 @@ export declare class GraphqlService implements IDataBuilder, IQueryBuilder {
         extensionASTNodes: readonly import("graphql").SchemaExtensionNode[];
         assumeValid: boolean;
     }>;
+    getSDL(): any;
 }
