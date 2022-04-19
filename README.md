@@ -1,10 +1,10 @@
 # Ancon ParkyDB 
 
-```npm i parkydb```
-
 ## A data mesh database using Web 3.0 technology 
 
->Note: Requires Node v17.7.2 and up for development
+```npm i parkydb```
+
+```Note: Requires Node v17.7.2 and up for development```
 
 More about [data mesh architecture](https://www.datamesh-architecture.com/) 
 
