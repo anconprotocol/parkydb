@@ -1,20 +1,18 @@
 # Ancon ParkyDB 
 
+```npm i parkydb```
+
 ## A data mesh database using Web 3.0 technology 
 
 >Note: Requires Node v17.7.2 and up for development
 
 More about [data mesh architecture](https://www.datamesh-architecture.com/) 
 
-![ParkyDB (2)](https://user-images.githubusercontent.com/1248071/159067543-a3afb7dd-c3e0-45f8-be96-9ff20083f488.png)
-
-![ParkyDB (1)](https://user-images.githubusercontent.com/1248071/159067544-593fa50f-9125-4266-9b08-c58f44bd7d5c.png)
-
 ## Block based data layered abstraction
 
-### IndexedDB (KV Layer - Layer 0)
+### KV Layer - Layer 0
 
-Stores key as cid or custom (topic) and values in the layered approached with a schema similar to:
+Stores key as cid and value as block:
 
 ```
 {
@@ -27,29 +25,18 @@ Stores key as cid or custom (topic) and values in the layered approached with a 
 }
 ```
 
-### DAG  (Linkable and Verifiable Layer - Layer 1)  
+### Linkable and Verifiable Layer - Layer 1
 
 Stores as an IPLD Multiformats DAG Block. Input must be a JSON payload. Can support either CBOR or JSON. This layer keeps data immutable (no mutations allowed) and uses special directives with query layer.
 
-### Document (Document Layer - Layer 2) 
+### Document Layer - Layer 2
 
 Stores as a JSON. Input must be a JSON payload. Used for queries only and represents a snapshot of the immutable data in DAG.
 
-### Index (Query and index Layer - Layer 3)  
+### Query and index Layer - Layer 3
 
-Stores as a Minisearch filter index. Input must be JSON payload. Used for search only and represents the JSON payload index, the `@filter` GraphQL directive will enable filtering.
+Stores as a Minisearch filter index. Input must be JSON payload. Used for search only and represents the JSON payload index, the `@filter` GraphQL directive will enable filtering. Add GraphQL support using Typegraphql to query the document layer.
 
-### GraphQL Schema (Query and index Layer - Layer 3)  
-
-Stores a GraphQL Schema. Used with on-demand GraphQL APIs that enables querying the DB and Index layer. Mutations are immutable PUTs in DAG. It also integrates different GraphQL stores using Mesh and appends the data as blocks in the database.
-
-### JSON Schema (Verifiable Document Layer - Layer 4)
-
-Stores a JSON Schema. Used to create `Verifiable Data Document`  dapps which  might contain or required ERC-721 / Verified Credential compatible schemas. This feature is used for data publishing exclusively.
-
-### Protobuf Schema (Messaging Layer - Layer 5)
-
-Stores a Protobuf Schema. Used to integrate data library with Waku and decentralized full nodes
 
 
 ## Run tests
@@ -65,7 +52,7 @@ We using Ava test framework
 
 
 
-## API v1.0.0-rc.3
+## API v1.0.31
 
 ### Store
 
@@ -73,22 +60,22 @@ We using Ava test framework
 import { ParkyDB } from 'parkydb'
 
 // Instantiate new DB instance
-const db = new ParkyDB()
+const db = new ParkyDB('northwind')
 await db.initialize()
 
 // Writes a DAG JSON block
 const id = await db.putBlock(payload)
 
-// Fetch an existing DAG block
+// Gets block from KV layer
 const res = await db.get(id)
-// Queries using Dexie
+
+// Queries using document layer
 const obs$ = await db.queryBlocks((blocks) => {
     return () => blocks.where({ cid: '' })
 });
 
-// Queries with GraphQL a JSON snapshot of the DAG block
+// Queries with GraphQL
 const q = await db.query({
-    cid: id,
     query: `
     query{
        block(cid: "${id}") {
@@ -98,6 +85,245 @@ const q = await db.query({
     }   
     `,
   })
+
+// Query direct to the document layer
+db.getBlocksByTableName$('blockdb', (b) => {
+      return () =>
+        b.where({ 'document.kind': 'StorageAsset' }).limit(limit).toArray()
+    })
+```
+
+### GraphQL
+
+#### Create type definitions
+
+```typescript
+// StorageKind.ts
+import {} from 'class-validator'
+import { Field, InterfaceType, ObjectType } from 'type-graphql'
+
+@ObjectType()
+export class Document {
+  @Field()
+  kind!: string
+
+  @Field()
+  tag!: string
+
+  @Field()
+  ref!: string
+}
+
+// Metadata asset - Store locally
+@ObjectType()
+export class StorageAsset extends Document{
+  @Field()
+  name!: string
+
+  @Field()
+  kind!: string
+
+  @Field()
+  timestamp!: number
+
+  @Field()
+  description!: string
+
+  @Field()
+  image!: string
+
+  @Field(type => [String])
+  sources!: string[]
+
+  @Field()
+  owner!: string
+}
+
+@ObjectType()
+export class StorageBlock extends Document{
+  @Field(type => StorageAsset)
+  content!: StorageAsset
+  @Field()
+  signature!: string // Either Waku+Web3 EIP712 or eth_signMessage
+  @Field()
+  digest!: string
+  @Field()
+  timestamp!: number
+  @Field()
+  issuer!: string
+}
+
+@ObjectType()
+export class IPFSBlock extends Document{
+  cid!: string
+}
+
+@ObjectType()
+export class ConfigBlock extends Document{
+  @Field()
+  entries!: string
+}
+
+@ObjectType()
+export class AddressBlock extends Document{
+  @Field()
+  address!: string
+
+  @Field()
+  resolver!: string
+
+  @Field()
+  type!:
+    | 'erc20'
+    | 'erc721'
+    | 'smart contract'
+    | 'eoa'
+    | 'uri'
+    | 'phone'
+    | 'email'
+    | 'gps'
+    | 'did'
+    | 'ens'
+}
+
+@ObjectType()
+export class AnconBlock extends Document{
+  @Field()
+  cid!: string
+  @Field()
+  topic!: string
+}
+
+@ObjectType()
+export class ERC721Block extends Document{
+  @Field()
+  txid!: string
+  @Field()
+  metadata!: string
+  @Field()
+  tokenAddress!: string
+  @Field()
+  tokenId!: string
+  @Field()
+  chainId!: string
+  @Field()
+  minterAddress!: string
+  @Field()
+  ownerAddress!: string
+}
+
+```
+
+
+#### Create resolver
+
+```typescript
+// StorageAssetResolver.ts
+import 'reflect-metadata'
+
+import {
+  Arg,
+  Args,
+  ArgsType,
+  Authorized,
+  Ctx,
+  Field,
+  Int,
+  Mutation,
+  Query,
+  Resolver,
+} from 'type-graphql'
+import { ParkyDB } from '../core/db'
+import { ServiceContext } from '../interfaces/ServiceContext'
+import { StorageAsset } from '../interfaces/StorageKind'
+
+@ArgsType()
+class StorageAssetArgs {
+  @Field((type) => Int, { defaultValue: 10, nullable: true })
+  limit!: number
+}
+
+@Resolver()
+export class StorageAssetResolver {
+
+  @Query((returns) => StorageAsset)
+  async asset(@Arg('id') id: string, @Ctx() ctx: ServiceContext) {
+    const model = await ctx.db.get(id)
+    if (model === undefined) {
+      throw new Error('Not found ' + id)
+    }
+    return model
+  }
+
+  @Query((returns) => [StorageAsset])
+  async assets(
+    @Args() { limit }: StorageAssetArgs,
+    @Ctx() ctx: ServiceContext,
+  ) {
+    return ctx.db.getBlocksByTableName$('blockdb', (b) => {
+      return () =>
+        b.where({ 'document.kind': 'StorageAsset' }).limit(limit).toArray()
+    })
+  }
+}
+
+```
+
+### Create a resolvers index file
+
+```typescript
+// index.ts
+import { BlockValueResolver } from './BlockValueResolver'
+import { StorageAssetResolver } from './StorageAssetResolver'
+
+export const defaultResolvers = [
+  BlockValueResolver,
+  StorageAssetResolver,
+] as const
+
+
+```
+
+#### Load into ParkyDB
+
+```typescript
+await this.db.initialize({
+  graphql: { resolvers: defaultResolvers }, 
+  enableSync: true,
+  wakuconnect: {
+    bootstrap: { peers: [peer] },
+  },
+  withWallet: {
+    password: '', /// Not used
+  },
+  withWeb3: {
+    provider: web3provider,
+    defaultAddress: identity.address,
+  },       
+  withIpfs: {
+    gateway: 'https://ipfs.infura.io',
+    api: 'https://ipfs.infura.io:5001',
+  },
+})
+```
+
+#### Query
+
+```typescript
+  const q = await db.query({
+    query: `
+    query{
+      block(cid: "${id}"){
+        cid,
+        document{
+          kind
+        }
+      }
+    }   
+    `,
+  })
+
+  t.is(q.data.block.cid, 'baguqeerabve7ug2qddskk3mpomdt3xdnhvh53jvmca7qh43p36y5hfoassoq')
 ```
 
 
@@ -107,20 +333,30 @@ const q = await db.query({
 import { ParkyDB } from 'parkydb'
 
 // Instantiate new DB instance
-const db = new ParkyDB()
+const db = new ParkyDB('data-union')
 // Browsers can only support web sockets connections with Waku v2
 const peer =
     '/ip4/0.0.0.0/tcp/8000/wss/p2p/...'
-  await this.bob.initialize({
-    // wakuconnect options
-    wakuconnect: { bootstrap: { peers: [peer] } },
-    // Remember these values come from a CLI or UI, DO NOT hardcode when implementing
-    withWallet: {
-      autoLogin: true,
-      password: 'zxcvb',
-      seed: 'opera offer craft joke defy team prosper tragic reopen street advice moral',
-    },
-  })
+
+  // typegraphql resolvers
+  await this.db.initialize({
+          graphql: { resolvers: defaultResolvers }, 
+          enableSync: true,
+          wakuconnect: {
+            bootstrap: { peers: [peer] },
+          },
+          withWallet: {
+            password: '', /// Not used
+          },
+          withWeb3: {
+            provider: web3provider,
+            defaultAddress: identity.address,
+          },       
+          withIpfs: {
+            gateway: 'https://ipfs.infura.io',
+            api: 'https://ipfs.infura.io:5001',
+          },
+        })
 const topic = `/anconprotocol/1/marketplace/ipld-dag-json`
 
 // Writes a DAG JSON block
@@ -129,35 +365,89 @@ const id = await db.putBlock({...payload, topic})
 // Fetch an existing DAG block
 const res = await db.get(id)
 
-const pubsub = await db.createTopicPubsub(topic)
+// ============================================
+// Create a key exchange and encrypted topic
+// ============================================
+// Keys
+const ecdsa = EthCrypto.createIdentity()
 
-// pubsub methods
-//  { 
-//   Streams blocks from topic message replies
-//   onBlockReply$: pubsub.asObservable(),
-//    
-//   On demand publishing
-//   publish: async (block: BlockValue),
-//   
-//   Closes any pending subscriptions
-//   close: () 
-// }
+// Subscriber codec
+const receiverCodec = {
+  name: 'cbor',
+  code: '0x71',
+  encode: async (obj) => encode(obj),
+  decode: async (buffer) => {
+    const cipher = await EthCrypto.cipher.parse(decode(buffer))
 
-pubsub.onBlockReply$.subscribe((block)=> {
+    const plain = await EthCrypto.decryptWithPrivateKey(
+      ecdsa.privateKey,
+      cipher
+    )
 
-  // GraphQL
-  const q = await db.query({
-      block,
-      query: `
-      query{
-        block(cid: "${id}") {
-          network
-          key
-        }
-      }   
-      `,
-    })
-})  
+    return JSON.parse(plain)
+  },
+}
+
+// Main topic
+const pubsub = await this.db.createTopicPubsub(this.defaultTopic, {
+  blockCodec: receiverCodec,
+  canSubscribe: true,
+  isKeyExchangeChannel: false,
+  canPublish: true,
+  isCRDT: false,
+})
+      
+pubsub.onBlockReply$.subscribe(async (v) => {
+  // custom logic
+  await this.db.putBlock(v.decoded.payload)
+})
+
+// default block codec
+const blockCodec = {
+  name: 'cbor',
+  code: '0x71',
+  encode: async (obj) => encode(obj),
+  decode: (buffer) => decode(buffer),
+}
+
+
+// emits key exchange public key
+await this.db.emitKeyExchangePublicKey(
+  this.keyExchangeTopic,
+  {
+    blockCodec,
+    // disables user signing requests when isCRDT is set to false
+    isCRDT: false,
+    pk: w.privateKey,
+    pub: w.publicKey,
+  }
+))
+
+// requests key exchange public key
+const kex = await this.db.requestKeyExchangePublicKey(
+  `/parkydb/1/keyex/cbor`,
+  {
+    blockCodec,
+  }
+)
+// obtains encryption public key
+const sub = kex.subscribe(async (encryptionPubKey: any) => {
+  const encBlockCodec = {
+    name: 'cbor',
+    code: '0x71',
+    encode: async (obj) => {
+      const enc = await EthCrypto.encryptWithPublicKey(
+        encryptionPubKey,
+        JSON.stringify(obj)
+      )
+
+      const x = await EthCrypto.cipher.stringify(enc)
+      return encode(x)
+    },
+  }
+
+  // custom logic, create another topic or convert observable to promise
+})
 ```
 
 
@@ -196,61 +486,50 @@ await db.wallet.addNewKeyring('Ed25519', [
 
 
 
-### Protocols (channels)
+### WebAuthn
 
 ```typescript
-test('create channel topic, signed and encrypted, cbor as message serialization', async (t) => {
-  const { alice, bob }: { alice: ParkyDB; bob: ParkyDB } = t.context as any
+import { WebauthnHardwareClient } from 'parkydb/lib/core/webauthnClient'
+import { WebauthnHardwareAuthenticate } from 'parkydb/lib/core/webauthnServer'
 
-  await alice.addSecp256k1([
-    'c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3',
-    ])
-    await alice.wallet.submitPassword(`qwerty`)
-    let accounts = await alice.wallet.getAccounts()
-    t.is(accounts.length, 1)
-    const accountA = accounts[0]
 
-  await bob.wallet.submitPassword(`zxcvb`)
-  accounts = await bob.wallet.getAccounts()
-  t.is(accounts.length, 1)
-  const accountB = accounts[0]
+const model = await this.db.get(cid, null)
 
-  const blockCodec = {
-    name: 'cbor',
-    code: '0x71',
-    encode: (obj: any) => encode(obj),
-    decode: (buffer: any) => decode(buffer),
-  }
-  const topic = `/anconprotocol/1/marketplace/cbor`
-  const pubsubAlice = await alice.createChannelPubsub(topic, {
-    from: accountA,
-    middleware: {
-      incoming: [tap()],
-      outgoing: [map((v: BlockValue)=> v.document)],
-    },
-    blockCodec,
-  })
-  pubsubAlice.onBlockReply$.subscribe(async (block: WakuMessage) => {
-    // match topic                              
-    t.is(topic, JSON.parse(block.payloadAsUtf8).topic)
-  })
-  const pubsubBob = await bob.createChannelPubsub(topic, {
-    from: accountB,
-    middleware: {
-      incoming: [tap()],
-      outgoing: [map((v: BlockValue)=> v.document)],
-    },
-    blockCodec,
-  })
-  pubsubBob.onBlockReply$.subscribe(async (block: WakuMessage) => {
-    // match topic
-    t.is(topic, JSON.parse(block.payloadAsUtf8).topic)
-    await bob.putBlock(payload, { topic })
-  })
-
-  // Say hi
-  await alice.putBlock(payload, { topic })
+// Fido2 server settings
+const fido2server = new WebauthnHardwareAuthenticate()
+fido2server.initialize({
+  rpId: 'localhost',
+  rpName: 'du.',
+  rpIcon: '',
+  attestation: 'none',
+  authenticatorRequireResidentKey: false,
+  authenticatorUserVerification: 'required',
 })
+
+// Fido2 client settings
+const fido2client = new WebauthnHardwareClient(fido2server, this.db)
+const origin = window.location.origin
+const res = await fido2client.registerSign(
+  origin,
+  model.cid,
+  this.defaultAddress(),
+  model.dag.bytes
+  (args) => { 
+     const {
+      // publicKey as Uint8Array    
+      publicKey,
+      // publicKey as JWK
+      publicKeyJwk,
+      // previous counter
+      prevCounter,
+      // authenticator data
+      authnrData,
+      // client data JSON
+      clientData,
+    } = args
+  },
+  keepSigning: false
+)
 ```
 
 #### DeFi example
@@ -298,29 +577,38 @@ test('find multichain tx by sender', async (t) => {
 
   // Aggregate from BSC, Ethereum and Polygon any Transfer to x address
   // Then pipe calls to Discord channel and an arbitrage bot using a webhook (POST)
-  const pubsubAlice = await alice.createChannelPubsub(topicBSC, {
+  const pubsubAlice = await alice.createTopicPubsub(topicBSC, {
     from: accountA,
     middleware: {
       incoming: [tap()],
       outgoing: [tap()],
     },
     blockCodec,
+    canSubscribe: true,
+    canPublish: true,
+    isCRDT: false,
   })
-  const pubsubBob = await bob.createChannelPubsub(topicEthereum, {
+  const pubsubBob = await bob.createTopicPubsub(topicEthereum, {
     from: accountB,
     middleware: {
       incoming: [tap()],
       outgoing: [tap()],
     },
     blockCodec,
+    canSubscribe: true,
+    canPublish: true,
+    isCRDT: false,
   })
-  const pubsubCharlie = await charlie.createChannelPubsub(topicPolygon, {
+  const pubsubCharlie = await charlie.createTopicPubsub(topicPolygon, {
     from: accountC,
     middleware: {
       incoming: [tap()],
       outgoing: [tap()],
     },
     blockCodec,
+    canSubscribe: true,
+    canPublish: true,
+    isCRDT: false,
   })
 
   subscribeNewBlocks(
@@ -360,26 +648,6 @@ test('find multichain tx by sender', async (t) => {
       await charlie.putBlock(payload, { topic })
     },
   )
-  const aggregator = await consumer.aggregate(
-    [topicBSC, topicEthereum, topicPolygon],
-    {
-      from: accountConsumer,
-      middleware: {
-        incoming: [
-          filter(
-            (v: object) => v.address === '0x...' && v.event === 'Transfer',
-          ),
-          zip(map(v=>v),reduce((v, init) => (v = new BigNumber(init).add(v)))),
-        ],
-      },
-      blockCodec,
-    },
-  )
-
-  aggregator.onBlockReply$.subscribe(async (payload: any) => {
-    const {v, sum} = payload
-    // send to discord or arbitrage bot...
-  })
 })
 
 ```
