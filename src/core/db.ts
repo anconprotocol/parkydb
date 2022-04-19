@@ -395,4 +395,8 @@ export class ParkyDB {
     } as ServiceContext
     return this.graphqlService.query(ctx, null)
   }
+
+  get graphqlSchema() {
+    return this.graphqlService.schema
+  }
 }
