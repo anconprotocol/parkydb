@@ -9,8 +9,8 @@ export interface KVAdapter {
     tableName: string,
     fn: (table: any) => () => unknown,
   ): Promise<any>
-  get(key: string): Promise<BlockValue>
-  put(cid: CID, block: BlockValue): Promise<BlockValue>
+  get(key: string, paths:string[]): Promise<BlockValue>
+  put(cid: CID, block: BlockValue, paths: string[]): Promise<BlockValue>
   onBlockCreated: Subject<any>
 }
 
