@@ -13,9 +13,8 @@ import {
   Resolver,
 } from 'type-graphql'
 import { ParkyDB } from '../core/db'
-import { ServiceContext } from '../parkydb-interfaces/interfaces/ServiceContext'
-import { StorageAsset } from '../parkydb-interfaces/interfaces/StorageKind'
-
+import { DBBlockValue } from 'parkydb-interfaces'
+import { ServiceContext, StorageAsset } from 'parkydb-interfaces'
 @ArgsType()
 class StorageAssetArgs {
   @Field((type) => Int, { defaultValue: 10, nullable: true })
@@ -27,7 +26,7 @@ export class StorageAssetResolver {
 
   @Query((returns) => StorageAsset)
   async asset(@Arg('id') id: string, @Ctx() ctx: ServiceContext) {
-    const model = await ctx.db.get(id)
+    const model = await (ctx.db as ParkyDB).get(id)
     if (model === undefined) {
       throw new Error('Not found ' + id)
     }
@@ -39,7 +38,7 @@ export class StorageAssetResolver {
     @Args() { limit }: StorageAssetArgs,
     @Ctx() ctx: ServiceContext,
   ) {
-    return ctx.db.getBlocksByTableName$('blockdb', (b) => {
+    return (ctx.db as ParkyDB).getBlocksByTableName$('blockdb', (b) => {
       return () =>
         b.where({ 'document.kind': 'StorageAsset' }).limit(limit).toArray()
     })

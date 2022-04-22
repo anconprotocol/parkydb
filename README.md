@@ -4,7 +4,7 @@
 
 ```npm i parkydb```
 
-```Note: Requires Node v17.7.2 and up for development```
+```Note: Requires Node v18 and up for development```
 
 More about [data mesh architecture](https://www.datamesh-architecture.com/) 
 
@@ -52,7 +52,7 @@ We using Ava test framework
 
 
 
-## API v1.0.31
+## API v1.1.0
 
 ### Store
 

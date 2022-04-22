@@ -1,10 +1,9 @@
 import { execute, GraphQLObjectType, GraphQLSchema } from 'graphql'
-import { IDataBuilder } from '../parkydb-interfaces/interfaces/IBuilder'
-import { IQueryBuilder } from '../parkydb-interfaces/interfaces/IQuery'
-import { ServiceContext } from '../parkydb-interfaces/interfaces/ServiceContext'
+
 import gql from 'graphql-tag'
 import composeWithJson from 'graphql-compose-json'
 import { schemaComposer } from 'graphql-compose'
+import { IDataBuilder, IQueryBuilder, ServiceContext } from 'parkydb-interfaces'
 import { SchemaGenerator } from 'type-graphql/dist/schema/schema-generator'
 /**
  * GraphQL manages query and mutation operations

@@ -1,6 +1,6 @@
 import Dexie from 'dexie'
 import { Ed25519 } from './ed25519keyring'
-import { IKeyringController } from '../parkydb-interfaces/interfaces/IKeyringController'
+import { IKeyringController } from 'parkydb-interfaces'
 import { Simple } from './simple'
 import { ethers } from 'ethers'
 const KeyringController = require('eth-keyring-controller')

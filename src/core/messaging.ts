@@ -5,24 +5,15 @@ if (!global.window) {
   // @ts-ignore
   global.crypto = crypto
 }
-import { Waku, WakuMessage } from 'js-waku'
-import { Codec } from 'multiformats/bases/base'
-import { BlockCodec, ByteView } from 'multiformats/codecs/interface'
-import { map, mergeMap, Observable, of, Subject, tap } from 'rxjs'
-import { ChannelCodeEnum } from '../parkydb-interfaces/interfaces/BlockCodec'
-import { BlockValue } from '../parkydb-interfaces/interfaces/Blockvalue'
-import { ChannelTopic } from '../parkydb-interfaces/interfaces/ChannelTopic'
-import { PubsubTopic } from '../parkydb-interfaces/interfaces/PubsubTopic'
-import { ethers } from 'ethers'
 import * as sigUtil from '@metamask/eth-sig-util'
-import {
-  PacketPayload,
-  PublicKeyMessage,
-  SecurePacketPayload,
-} from '../parkydb-interfaces/interfaces/PublicKeyMessage'
 import { SignTypedDataVersion } from '@metamask/eth-sig-util'
-import { arrayify } from 'ethers/lib/utils'
-import { StorageBlock } from '../parkydb-interfaces/interfaces/StorageKind'
+import { Waku, WakuMessage } from 'js-waku'
+import { BlockCodec } from 'multiformats/codecs/interface'
+import {
+  BlockValue, ChannelTopic, PacketPayload,
+  PublicKeyMessage, PubsubTopic, SecurePacketPayload, StorageBlock
+} from 'parkydb-interfaces'
+import { map, mergeMap, Observable, of, Subject, tap } from 'rxjs'
 
 export interface IMessaging {
   bootstrap(options: any): void

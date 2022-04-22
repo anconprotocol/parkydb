@@ -1,6 +1,6 @@
 import 'reflect-metadata';
-import { DBBlockValue } from '../parkydb-interfaces/interfaces/Blockvalue';
-import { ServiceContext } from '../parkydb-interfaces/interfaces/ServiceContext';
+import { DBBlockValue } from 'parkydb-interfaces';
+import { ServiceContext } from 'parkydb-interfaces';
 declare class BlocksArgs {
     query: any;
     limit: number;

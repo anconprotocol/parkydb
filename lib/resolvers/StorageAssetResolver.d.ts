@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { ServiceContext } from '../parkydb-interfaces/interfaces/ServiceContext';
+import { ServiceContext } from 'parkydb-interfaces';
 declare class StorageAssetArgs {
     limit: number;
 }

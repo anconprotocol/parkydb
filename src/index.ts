@@ -4,8 +4,5 @@ export * from './core/messaging'
 export * from './core/webauthnClient'
 export * from './core/webauthnServer'
 export * from './core/ancon'
-export * from './parkydb-interfaces/interfaces/BlockCodec'
-export * from './parkydb-interfaces/interfaces/Blockvalue'
-export * from './parkydb-interfaces/interfaces/ChannelTopic'
 export * from './resolvers'
 

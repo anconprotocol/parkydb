@@ -1,6 +1,6 @@
 const toJsonSchema = require('to-json-schema')
-import { IDataBuilder } from '../parkydb-interfaces/interfaces/IBuilder'
-import { IQueryBuilder } from '../parkydb-interfaces/interfaces/IQuery'
+import { IDataBuilder } from 'parkydb-interfaces'
+import { IQueryBuilder } from 'parkydb-interfaces'
 export class IndexService implements IDataBuilder, IQueryBuilder {
   constructor(private currentIndex?: any) {}
   async load(key: any, data: any): Promise<any> {}

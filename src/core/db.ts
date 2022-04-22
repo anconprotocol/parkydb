@@ -6,24 +6,21 @@ if (!global.window) {
   global.crypto = crypto
 }
 import { CID } from 'blockstore-core/base'
-
-import { v4 as uuidv4 } from 'uuid'
-import MiniSearch from 'minisearch'
-import { Block } from 'multiformats/block'
-import { DAGJsonService } from './dagjson'
-import { GraphqlService } from '../query/graphql'
-import { JsonSchemaService } from './jsonschema'
-import { ServiceContext } from '../parkydb-interfaces/interfaces/ServiceContext'
-import { ChannelOptions, MessagingService } from './messaging'
-import { Hooks } from '../parkydb-indexeddb/hooks'
-import { filter, map, Subject } from 'rxjs'
-import { WalletController } from '../wallet/controller'
-import { getPublicKey } from 'js-waku'
-import { AnconService } from './ancon'
-import { IPFSService } from './ipfs'
-import { hexlify } from 'ethers/lib/utils'
 import { decode, encode } from 'cbor-x'
-import { KVAdapter } from '../parkydb-interfaces/interfaces/KVAdapter'
+import { hexlify } from 'ethers/lib/utils'
+import { getPublicKey } from 'js-waku'
+import { Block } from 'multiformats/block'
+import { ServiceContext } from 'parkydb-interfaces'
+import { filter, map } from 'rxjs'
+import { v4 as uuidv4 } from 'uuid'
+import { GraphqlService } from '../query/graphql'
+import { WalletController } from '../wallet/controller'
+import { AnconService } from './ancon'
+import { DAGJsonService } from './dagjson'
+import { IPFSService } from './ipfs'
+import { JsonSchemaService } from './jsonschema'
+import { ChannelOptions, MessagingService } from './messaging'
+
 const { MerkleJson } = require('merkle-json')
 
 /**

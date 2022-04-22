@@ -1,9 +1,9 @@
 /// <reference types="node" />
 import { CID } from 'blockstore-core/base';
 import { Block } from 'multiformats/block';
-import { ChannelOptions } from './messaging';
 import { AnconService } from './ancon';
 import { IPFSService } from './ipfs';
+import { ChannelOptions } from './messaging';
 export declare class ParkyDB {
     private name;
     private keyringController;
@@ -56,14 +56,14 @@ export declare class ParkyDB {
         model?: undefined;
     }>;
     put(key: CID, value: Block<any>): Promise<any>;
-    createTopicPubsub(topic: string, options: ChannelOptions): Promise<import("../parkydb-interfaces").PubsubTopic>;
+    createTopicPubsub(topic: string, options: ChannelOptions): Promise<import("parkydb-interfaces").PubsubTopic>;
     emitKeyExchangePublicKey(topic: string, options: ChannelOptions): Promise<import("rxjs").Observable<boolean>>;
     requestKeyExchangePublicKey(topic: string, options: ChannelOptions): Promise<any>;
     getWallet(): Promise<any>;
     get ancon(): AnconService;
     get ipfs(): IPFSService;
-    createChannelPubsub(topic: string, options: ChannelOptions): Promise<import("..").ChannelTopic>;
-    aggregate(topic: string[], options: ChannelOptions): Promise<import("..").ChannelTopic>;
+    createChannelPubsub(topic: string, options: ChannelOptions): Promise<import("parkydb-interfaces").ChannelTopic>;
+    aggregate(topic: string[], options: ChannelOptions): Promise<import("parkydb-interfaces").ChannelTopic>;
     get(key: any, options?: any): Promise<any>;
     queryBlocks$(fn: (blocks: any) => () => unknown): Promise<any>;
     getBlocksByTableName$(tableName: string, fn: (table: any) => () => unknown): Promise<any>;

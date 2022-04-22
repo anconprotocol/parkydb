@@ -2,8 +2,7 @@ import { CID } from 'blockstore-core/base';
 import { Table } from 'dexie';
 import 'dexie-observable/api';
 import { Subject } from 'rxjs';
-import { BlockValue } from '../parkydb-interfaces';
-import { KVAdapter } from '../parkydb-interfaces/interfaces/KVAdapter';
+import { BlockValue, KVAdapter } from 'parkydb-interfaces';
 export declare function createKVAdapter(): Promise<KVAdapter>;
 export declare class IndexedDBAdapter implements KVAdapter {
     private hooks;

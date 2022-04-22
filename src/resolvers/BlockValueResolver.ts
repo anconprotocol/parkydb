@@ -1,21 +1,16 @@
 import 'reflect-metadata'
-
 import {
   Arg,
   Args,
-  ArgsType,
-  Authorized,
-  Ctx,
+  ArgsType, Ctx,
   Field,
-  Int,
-  Mutation,
-  Query,
-  Resolver,
+  Int, Query,
+  Resolver
 } from 'type-graphql'
+import { DBBlockValue } from 'parkydb-interfaces'
+import { ServiceContext } from 'parkydb-interfaces'
 import { ParkyDB } from '../core/db'
-import { DBBlockValue } from '../parkydb-interfaces/interfaces/Blockvalue'
-import { ServiceContext } from '../parkydb-interfaces/interfaces/ServiceContext'
-import { Document, StorageAsset } from '../parkydb-interfaces/interfaces/StorageKind'
+
 
 @ArgsType()
 class BlocksArgs {
@@ -30,7 +25,7 @@ class BlocksArgs {
 export class BlockValueResolver {
   @Query((returns) => DBBlockValue)
   async block(@Arg('cid') cid: string, @Ctx() ctx: ServiceContext): Promise<DBBlockValue>{
-    const model = await ctx.db.get(cid)
+    const model = await (ctx.db as ParkyDB).get(cid)
     if (model === undefined) {
       throw new Error('Not found ' + cid)
     }
@@ -42,7 +37,7 @@ export class BlockValueResolver {
     @Args() { query, limit }: BlocksArgs,
     @Ctx() ctx: ServiceContext,
   ) {
-    return ctx.db.getBlocksByTableName$('blockdb', (b) => {
+    return (ctx.db as ParkyDB).getBlocksByTableName$('blockdb', (b) => {
       return () =>
         b
           .where({ ...query } as { [k: string]: string })

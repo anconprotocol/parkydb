@@ -1,11 +1,7 @@
 import { Waku, WakuMessage } from 'js-waku';
 import { BlockCodec } from 'multiformats/codecs/interface';
+import { BlockValue, ChannelTopic, PublicKeyMessage, PubsubTopic, StorageBlock } from 'parkydb-interfaces';
 import { Observable, Subject } from 'rxjs';
-import { BlockValue } from '../parkydb-interfaces/interfaces/Blockvalue';
-import { ChannelTopic } from '../parkydb-interfaces/interfaces/ChannelTopic';
-import { PubsubTopic } from '../parkydb-interfaces/interfaces/PubsubTopic';
-import { PublicKeyMessage } from '../parkydb-interfaces/interfaces/PublicKeyMessage';
-import { StorageBlock } from '../parkydb-interfaces/interfaces/StorageKind';
 export interface IMessaging {
     bootstrap(options: any): void;
 }

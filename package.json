@@ -1,6 +1,6 @@
 {
   "name": "parkydb",
-  "version": "1.0.33",
+  "version": "1.1.0",
   "description": "",
   "main": "lib/index.js",
   "scripts": {
@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/anconprotocol/parkydb.git"
+  "url": "git+https://github.com/anconprotocol/parkydb.git"
   },
   "author": "",
   "license": "MIT",
@@ -47,12 +47,11 @@
     "graphql-tag": "^2.12.6",
     "indexeddbshim": "^2.2.1",
     "js-waku": "^0.20.0",
-    "jsonschema-protobuf": "^1.0.2",
     "merkle-json": "^2.0.0",
     "minisearch": "^4.0.3",
     "mobile-device-detect": "^0.4.3",
     "multiformats": "^9.6.4",
-    "protobufjs": "^6.11.2",
+    "parkydb-interfaces": "github:anconprotocol/parkydb-interfaces",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.5.5",
     "to-json-schema": "^0.2.5",
@@ -75,6 +74,6 @@
     ]
   },
   "engines": {
-    "node": ">=17"
+    "node": ">=18"
   }
 }

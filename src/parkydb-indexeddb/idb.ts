@@ -7,10 +7,9 @@ import 'dexie-observable/api'
 
 import { Hooks } from './hooks'
 import { Subject } from 'rxjs'
-import { BlockValue } from '../parkydb-interfaces'
-import { KVAdapter } from '../parkydb-interfaces/interfaces/KVAdapter'
+import { BlockValue, KVAdapter } from 'parkydb-interfaces'
 
-export async function createKVAdapter():  Promise<KVAdapter> {
+export async function createKVAdapter(): Promise<KVAdapter> {
   const a = new IndexedDBAdapter()
   await a.initialize({ name: '' })
   return a
@@ -23,7 +22,7 @@ export class IndexedDBAdapter implements KVAdapter {
   private hooks = new Hooks()
   onBlockCreated = new Subject<BlockValue>()
   db: any
-  constructor(){}
+  constructor() {}
 
   async initialize({ name }: any) {
     const db: Dexie | any = new Dexie(
