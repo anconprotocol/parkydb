@@ -1,5 +1,5 @@
 import * as Block from 'multiformats/block';
-import { IDataBuilder } from '../interfaces/IBuilder';
+import { IDataBuilder } from '../parkydb-interfaces/interfaces/IBuilder';
 export declare class DAGJsonService implements IDataBuilder {
     decodeBlock(block: any): Promise<Block.Block<unknown>>;
     build(value: object): Promise<Block.Block<unknown>>;

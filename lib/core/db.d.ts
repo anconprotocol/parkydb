@@ -1,19 +1,15 @@
 /// <reference types="node" />
 import { CID } from 'blockstore-core/base';
-import { Table } from 'dexie';
-import 'dexie-observable/api';
 import { Block } from 'multiformats/block';
 import { ChannelOptions } from './messaging';
-import { Observable } from 'rxjs';
 import { AnconService } from './ancon';
 import { IPFSService } from './ipfs';
 export declare class ParkyDB {
+    private name;
     private keyringController;
     private dagService;
     private graphqlService;
     private jsonschemaService;
-    private hooks;
-    private onBlockCreated;
     private anconService;
     private messagingService;
     private ipfsService;
@@ -23,7 +19,13 @@ export declare class ParkyDB {
     syncPubsubDexie: any;
     store: any;
     constructor(name: string);
-    initialize(options: {
+    initialize<T>(options: {
+        withDB: {
+            provider: {
+                new (): T;
+            };
+            options: any;
+        };
         withWallet: any;
         withWeb3?: any;
         withAncon?: any;
@@ -44,8 +46,8 @@ export declare class ParkyDB {
         encode: (obj: any) => Promise<Buffer>;
         decode: (buffer: any) => any;
     };
-    getSyncStore(filter: any): Promise<Observable<import("js-waku").WakuMessage>>;
-    getTopicStore(topics: string[], filter: any): Promise<Observable<import("js-waku").WakuMessage>>;
+    getSyncStore(filter: any): Promise<import("rxjs").Observable<import("js-waku").WakuMessage>>;
+    getTopicStore(topics: string[], filter: any): Promise<import("rxjs").Observable<import("js-waku").WakuMessage>>;
     putBlock(payload: any, options?: any): Promise<{
         id: string;
         model: any;
@@ -54,8 +56,8 @@ export declare class ParkyDB {
         model?: undefined;
     }>;
     put(key: CID, value: Block<any>): Promise<any>;
-    createTopicPubsub(topic: string, options: ChannelOptions): Promise<import("../interfaces/PubsubTopic").PubsubTopic>;
-    emitKeyExchangePublicKey(topic: string, options: ChannelOptions): Promise<Observable<boolean>>;
+    createTopicPubsub(topic: string, options: ChannelOptions): Promise<import("../parkydb-interfaces").PubsubTopic>;
+    emitKeyExchangePublicKey(topic: string, options: ChannelOptions): Promise<import("rxjs").Observable<boolean>>;
     requestKeyExchangePublicKey(topic: string, options: ChannelOptions): Promise<any>;
     getWallet(): Promise<any>;
     get ancon(): AnconService;
@@ -63,8 +65,8 @@ export declare class ParkyDB {
     createChannelPubsub(topic: string, options: ChannelOptions): Promise<import("..").ChannelTopic>;
     aggregate(topic: string[], options: ChannelOptions): Promise<import("..").ChannelTopic>;
     get(key: any, options?: any): Promise<any>;
-    queryBlocks$(fn: (blocks: Table) => () => unknown): Promise<import("dexie").Observable<unknown>>;
-    getBlocksByTableName$(tableName: string, fn: (table: Table) => () => unknown): Promise<import("dexie").Observable<unknown>>;
+    queryBlocks$(fn: (blocks: any) => () => unknown): Promise<any>;
+    getBlocksByTableName$(tableName: string, fn: (table: any) => () => unknown): Promise<any>;
     query(options: any): Promise<any>;
     get graphqlSchema(): any;
 }

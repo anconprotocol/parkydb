@@ -9,20 +9,20 @@ import { Waku, WakuMessage } from 'js-waku'
 import { Codec } from 'multiformats/bases/base'
 import { BlockCodec, ByteView } from 'multiformats/codecs/interface'
 import { map, mergeMap, Observable, of, Subject, tap } from 'rxjs'
-import { ChannelCodeEnum } from '../interfaces/BlockCodec'
-import { BlockValue } from '../interfaces/Blockvalue'
-import { ChannelTopic } from '../interfaces/ChannelTopic'
-import { PubsubTopic } from '../interfaces/PubsubTopic'
+import { ChannelCodeEnum } from '../parkydb-interfaces/interfaces/BlockCodec'
+import { BlockValue } from '../parkydb-interfaces/interfaces/Blockvalue'
+import { ChannelTopic } from '../parkydb-interfaces/interfaces/ChannelTopic'
+import { PubsubTopic } from '../parkydb-interfaces/interfaces/PubsubTopic'
 import { ethers } from 'ethers'
 import * as sigUtil from '@metamask/eth-sig-util'
 import {
   PacketPayload,
   PublicKeyMessage,
   SecurePacketPayload,
-} from '../interfaces/PublicKeyMessage'
+} from '../parkydb-interfaces/interfaces/PublicKeyMessage'
 import { SignTypedDataVersion } from '@metamask/eth-sig-util'
 import { arrayify } from 'ethers/lib/utils'
-import { StorageBlock } from '../interfaces/StorageKind'
+import { StorageBlock } from '../parkydb-interfaces/interfaces/StorageKind'
 
 export interface IMessaging {
   bootstrap(options: any): void

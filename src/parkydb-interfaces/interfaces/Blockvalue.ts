@@ -11,13 +11,10 @@ export interface Schemas {
 }
 
 export interface BlockValue {
-  cid: CID
+  cid: string
   dag: Block<any>
   document: object
-  topic?: string
-  schemas: Schemas
-  index: any
-  hashtag: any
+  uuid: string
   timestamp: number
 }
 
@@ -32,14 +29,7 @@ export class DBBlockValue {
   @Field()
   document!: Document
 
-  @Field()
-  topic?: string
 
-  @Field()
-  index!: string
-
-  @Field()
-  hashtag!: string
 
   @Field()
   timestamp!: number

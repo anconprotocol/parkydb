@@ -13,9 +13,9 @@ import {
   Resolver,
 } from 'type-graphql'
 import { ParkyDB } from '../core/db'
-import { DBBlockValue } from '../interfaces/Blockvalue'
-import { ServiceContext } from '../interfaces/ServiceContext'
-import { Document, StorageAsset } from '../interfaces/StorageKind'
+import { DBBlockValue } from '../parkydb-interfaces/interfaces/Blockvalue'
+import { ServiceContext } from '../parkydb-interfaces/interfaces/ServiceContext'
+import { Document, StorageAsset } from '../parkydb-interfaces/interfaces/StorageKind'
 
 @ArgsType()
 class BlocksArgs {

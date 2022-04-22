@@ -13,8 +13,8 @@ import {
   Resolver,
 } from 'type-graphql'
 import { ParkyDB } from '../core/db'
-import { ServiceContext } from '../interfaces/ServiceContext'
-import { StorageAsset } from '../interfaces/StorageKind'
+import { ServiceContext } from '../parkydb-interfaces/interfaces/ServiceContext'
+import { StorageAsset } from '../parkydb-interfaces/interfaces/StorageKind'
 
 @ArgsType()
 class StorageAssetArgs {

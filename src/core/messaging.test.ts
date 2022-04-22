@@ -3,12 +3,13 @@ import test from 'ava'
 import { WakuMessage } from 'js-waku'
 import { ByteView } from 'multiformats/codecs/interface'
 import { map, tap } from 'rxjs'
-import { ChannelCodeEnum } from '../interfaces/BlockCodec'
-import { BlockValue } from '../interfaces/Blockvalue'
+import { ChannelCodeEnum } from '../parkydb-interfaces/interfaces/BlockCodec'
+import { BlockValue } from '../parkydb-interfaces/interfaces/Blockvalue'
 import { ParkyDB } from './db'
 import { MessagingService } from './messaging'
 import { Simple } from '../wallet/simple'
 import { defaultResolvers } from '../resolvers'
+import { IndexedDBAdapter } from '../parkydb-indexeddb'
 
 const payload = {
   commitHash: 'xg8pyBr3McqYlUgxAqV0t3s6TRcP+B7MHyPTtyVKMJw=',
@@ -63,7 +64,13 @@ test.beforeEach(async (t) => {
       seed:
         'window alpha view text barely urge minute nasty motion curtain need dinosaur',
     },
-  })
+    withDB:{
+      provider: IndexedDBAdapter,
+
+      options: {
+        name:'coco'
+      }
+    },  })
 
   const bob = alice
 

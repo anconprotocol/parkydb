@@ -1,5 +1,5 @@
 import Dexie from 'dexie';
-import { IKeyringController } from '../interfaces/IKeyringController';
+import { IKeyringController } from '../parkydb-interfaces/interfaces/IKeyringController';
 export declare class WalletController implements IKeyringController {
     keyringController?: any;
     constructor(keyringController?: any);

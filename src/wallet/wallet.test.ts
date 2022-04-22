@@ -6,6 +6,7 @@ const c = require('crypto').webcrypto;
 global.crypto = c
 
 import { ParkyDB } from '../core/db'
+import { IndexedDBAdapter } from '../parkydb-indexeddb';
 import { defaultResolvers } from '../resolvers';
 import { Simple } from './simple';
 
@@ -54,6 +55,13 @@ const payload = {
 test.beforeEach(async (t) => {
   const db = new ParkyDB('tests')
   await db.initialize({ 
+    withDB:{
+      provider: IndexedDBAdapter,
+
+      options: {
+        name:'coco'
+      }
+    },
     graphql: { resolvers: defaultResolvers},
     // Remember these values come from a CLI or UI, DO NOT hardcode when implementing
     withWallet: {

@@ -1,10 +1,10 @@
 import 'reflect-metadata';
-import { ServiceContext } from '../interfaces/ServiceContext';
+import { ServiceContext } from '../parkydb-interfaces/interfaces/ServiceContext';
 declare class StorageAssetArgs {
     limit: number;
 }
 export declare class StorageAssetResolver {
     asset(id: string, ctx: ServiceContext): Promise<any>;
-    assets({ limit }: StorageAssetArgs, ctx: ServiceContext): Promise<import("dexie").Observable<unknown>>;
+    assets({ limit }: StorageAssetArgs, ctx: ServiceContext): Promise<any>;
 }
 export {};

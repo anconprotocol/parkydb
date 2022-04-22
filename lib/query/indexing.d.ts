@@ -1,5 +1,5 @@
-import { IDataBuilder } from '../interfaces/IBuilder';
-import { IQueryBuilder } from '../interfaces/IQuery';
+import { IDataBuilder } from '../parkydb-interfaces/interfaces/IBuilder';
+import { IQueryBuilder } from '../parkydb-interfaces/interfaces/IQuery';
 export declare class IndexService implements IDataBuilder, IQueryBuilder {
     private currentIndex?;
     constructor(currentIndex?: any);

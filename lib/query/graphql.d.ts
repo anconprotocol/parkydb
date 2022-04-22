@@ -1,7 +1,7 @@
 import { GraphQLObjectType, GraphQLSchema } from 'graphql';
-import { IDataBuilder } from '../interfaces/IBuilder';
-import { IQueryBuilder } from '../interfaces/IQuery';
-import { ServiceContext } from '../interfaces/ServiceContext';
+import { IDataBuilder } from '../parkydb-interfaces/interfaces/IBuilder';
+import { IQueryBuilder } from '../parkydb-interfaces/interfaces/IQuery';
+import { ServiceContext } from '../parkydb-interfaces/interfaces/ServiceContext';
 export declare class GraphqlService implements IDataBuilder, IQueryBuilder {
     schema: GraphQLSchema;
     sdl: any;

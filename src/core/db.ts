@@ -1,6 +1,3 @@
-const fakeIndexedDB = require('fake-indexeddb')
-const fakeIDBKeyRange = require('fake-indexeddb/lib/FDBKeyRange')
-
 const { Crypto } = require('@peculiar/webcrypto')
 const crypto = new Crypto()
 // @ts-ignore
@@ -9,29 +6,24 @@ if (!global.window) {
   global.crypto = crypto
 }
 import { CID } from 'blockstore-core/base'
-import Dexie, { liveQuery, Table } from 'dexie'
-import 'dexie-observable/api'
 
 import { v4 as uuidv4 } from 'uuid'
 import MiniSearch from 'minisearch'
-import { Block, ByteView } from 'multiformats/block'
+import { Block } from 'multiformats/block'
 import { DAGJsonService } from './dagjson'
 import { GraphqlService } from '../query/graphql'
 import { JsonSchemaService } from './jsonschema'
-import { ServiceContext } from '../interfaces/ServiceContext'
+import { ServiceContext } from '../parkydb-interfaces/interfaces/ServiceContext'
 import { ChannelOptions, MessagingService } from './messaging'
-import { Hooks } from './hooks'
-import { async, filter, lastValueFrom, map, Observable, Subject } from 'rxjs'
-import { BlockValue } from '../interfaces/Blockvalue'
+import { Hooks } from '../parkydb-indexeddb/hooks'
+import { filter, map, Subject } from 'rxjs'
 import { WalletController } from '../wallet/controller'
-import { generatePrivateKey, getPublicKey } from 'js-waku'
-import { Ed25519 } from '../wallet/ed25519keyring'
-import { Simple } from '../wallet/simple'
-import { ethers } from 'ethers'
+import { getPublicKey } from 'js-waku'
 import { AnconService } from './ancon'
 import { IPFSService } from './ipfs'
 import { hexlify } from 'ethers/lib/utils'
 import { decode, encode } from 'cbor-x'
+import { KVAdapter } from '../parkydb-interfaces/interfaces/KVAdapter'
 const { MerkleJson } = require('merkle-json')
 
 /**
@@ -42,52 +34,25 @@ export class ParkyDB {
   private dagService = new DAGJsonService()
   private graphqlService = new GraphqlService()
   private jsonschemaService = new JsonSchemaService()
-  private hooks = new Hooks()
-  private onBlockCreated = new Subject<BlockValue>()
   // @ts-ignore
   private anconService: AnconService
   // @ts-ignore
   private messagingService: MessagingService
   // @ts-ignore
   private ipfsService: IPFSService
-  db: any
-  // @ts-ignore
-  syncTopic: string
+ // @ts-ignore
+  db: any 
+  syncTopic: string = ''
   syncPubsub: any
   syncPubsubDexie: any
   store: any
-  constructor(name: string) {
-    const db: Dexie | any = new Dexie(
-      name,
-      // @ts-ignore
-      global.window
-        ? {}
-        : {
-            indexedDB: fakeIndexedDB,
-            IDBKeyRange: fakeIDBKeyRange,
-          },
-    )
+  constructor(private name: string) {}
 
-    db.version(1).stores({
-      fido2keys:`++id,rawId`,
-      keyring: `id`,
-      history: `&cid, refs`,
-      blockdb: `++id,&cid,
-        &uuid,
-        topic,
-        kind,
-        document.kind,
-        timestamp`,
-    })
-
-    this.db = db
-    this.db.blockdb.hook(
-      'creating',
-      this.hooks.attachRouter(this.onBlockCreated),
-    )
-  }
-
-  async initialize(options: {
+  async initialize<T>(options: {
+    withDB: {
+      provider: { new(): T },
+      options: any
+    }
     withWallet: any
     withWeb3?: any
     withAncon?: any
@@ -97,9 +62,11 @@ export class ParkyDB {
     documentTypes?: any
     graphql: { resolvers: any }
   }) {
+    this.db = new options.withDB.provider()
+    await this.db.initialize(options.withDB.options)
 
     await this.graphqlService.initialize(options.graphql.resolvers)
-    await this.keyringController.load(this.db)
+    await this.keyringController.load(this.db.db)
 
     if (options.withWallet) {
       if (options.withWallet.autoLogin) {
@@ -212,24 +179,13 @@ export class ParkyDB {
   }
 
   async put(key: CID, value: Block<any>) {
-    const jsch = await this.jsonschemaService.build(value.value)
-    const mj = new MerkleJson()
-    const miniSearch = new MiniSearch({
-      fields: Object.keys(value.value),
-    })
-
     const uuid = uuidv4()
-    await miniSearch.addAllAsync([{ id: key.toString(), ...value.value }])
-    return this.db.blockdb.put({
+    //    await miniSearch.addAllAsync([{ id: key.toString(), ...value.value }])
+    return this.db.put(key, {
       cid: key.toString(),
       uuid,
       dag: value,
       document: value.value,
-      schemas: {
-        jsonschema: jsch,
-      },
-      hashtag: mj.hash(value.value),
-      index: JSON.stringify(miniSearch),
       timestamp: new Date().getTime(),
     })
   }
@@ -322,7 +278,7 @@ export class ParkyDB {
     return this.messagingService.createChannel(
       topic,
       { ...options, sigkey: h, encryptionPubKey: hexlify(pubkey) },
-      this.onBlockCreated,
+      this.db.onBlockCreated,
     )
   }
 
@@ -359,7 +315,7 @@ export class ParkyDB {
    * @returns
    */
   async get(key: any, options: any = {}) {
-    return this.db.blockdb.get({ cid: key })
+    return this.db.get(key)
   }
 
   /**
@@ -367,8 +323,8 @@ export class ParkyDB {
    * @param options
    * @returns
    */
-  async queryBlocks$(fn: (blocks: Table) => () => unknown) {
-    return liveQuery(fn(this.db.blockdb))
+  async queryBlocks$(fn: (blocks: any) => () => unknown) {
+    return this.db.queryBlocks$(fn)
   }
 
   /**
@@ -378,9 +334,9 @@ export class ParkyDB {
    */
   async getBlocksByTableName$(
     tableName: string,
-    fn: (table: Table) => () => unknown,
+    fn: (table: any) => () => unknown,
   ) {
-    return liveQuery(fn(this.db[tableName]))
+    return this.db.getBlocksByTableName$(tableName, fn)
   }
 
   /**
