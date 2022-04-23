@@ -55,7 +55,7 @@ export declare class ParkyDB {
         id: string;
         model?: undefined;
     }>;
-    put(key: CID, value: Block<any>): Promise<any>;
+    put(key: CID, value: Block<any>, path?: string[]): Promise<any>;
     createTopicPubsub(topic: string, options: ChannelOptions): Promise<import("parkydb-interfaces").PubsubTopic>;
     emitKeyExchangePublicKey(topic: string, options: ChannelOptions): Promise<import("rxjs").Observable<boolean>>;
     requestKeyExchangePublicKey(topic: string, options: ChannelOptions): Promise<any>;
@@ -64,7 +64,7 @@ export declare class ParkyDB {
     get ipfs(): IPFSService;
     createChannelPubsub(topic: string, options: ChannelOptions): Promise<import("parkydb-interfaces").ChannelTopic>;
     aggregate(topic: string[], options: ChannelOptions): Promise<import("parkydb-interfaces").ChannelTopic>;
-    get(key: any, options?: any): Promise<any>;
+    get(key: any, path?: any): Promise<any>;
     queryBlocks$(fn: (blocks: any) => () => unknown): Promise<any>;
     getBlocksByTableName$(tableName: string, fn: (table: any) => () => unknown): Promise<any>;
     query(options: any): Promise<any>;

@@ -37,8 +37,8 @@ export class ParkyDB {
   private messagingService: MessagingService
   // @ts-ignore
   private ipfsService: IPFSService
- // @ts-ignore
-  db: any 
+  // @ts-ignore
+  db: any
   syncTopic: string = ''
   syncPubsub: any
   syncPubsubDexie: any
@@ -47,7 +47,7 @@ export class ParkyDB {
 
   async initialize<T>(options: {
     withDB: {
-      provider: { new(): T },
+      provider: { new (): T }
       options: any
     }
     withWallet: any
@@ -175,16 +175,20 @@ export class ParkyDB {
     }
   }
 
-  async put(key: CID, value: Block<any>) {
+  async put(key: CID, value: Block<any>, path: string[] = []) {
     const uuid = uuidv4()
     //    await miniSearch.addAllAsync([{ id: key.toString(), ...value.value }])
-    return this.db.put(key, {
-      cid: key.toString(),
-      uuid,
-      dag: value,
-      document: value.value,
-      timestamp: new Date().getTime(),
-    })
+    return this.db.put(
+      key,
+      {
+        cid: key.toString(),
+        uuid,
+        dag: value,
+        document: value.value,
+        timestamp: new Date().getTime(),
+      },
+      path,
+    )
   }
 
   /**
@@ -311,8 +315,8 @@ export class ParkyDB {
    * @param options
    * @returns
    */
-  async get(key: any, options: any = {}) {
-    return this.db.get(key)
+  async get(key: any, path: any = []) {
+    return this.db.get(key, path)
   }
 
   /**
