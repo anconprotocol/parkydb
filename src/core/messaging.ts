@@ -206,7 +206,7 @@ export class MessagingService implements IMessaging {
           let message = (await options.blockCodec.decode(
             msg.payload,
           )) as PacketPayload
-          if (this.defaultAddress && this.web3Provider) {
+          if (this.defaultAddress) {
             message = (await options.blockCodec.decode(
               msg.payload,
             )) as SecurePacketPayload
@@ -245,7 +245,7 @@ export class MessagingService implements IMessaging {
       // @ts-ignore
       cancel = pub$.subscribe(async (block: any) => {
         let message: any = { payload: block }
-        if (this.defaultAddress && this.web3Provider) {
+        if (this.defaultAddress) {
           const msg = this.buildBlockDocument('data.universal', block as any)
 
           let sig = null
