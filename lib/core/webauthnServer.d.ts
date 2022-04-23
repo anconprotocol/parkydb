@@ -10,6 +10,6 @@ export declare class WebauthnHardwareAuthenticate {
         authenticatorUserVerification?: any;
         cryptoParams?: any;
     }): void;
-    registrationOptions(username: string, payload: Uint8Array): Promise<any>;
+    registrationOptions(isMobile: boolean, username: string, payload: Uint8Array): Promise<any>;
     signData(origin: any, updatedCreds: any, challenge: any, payload: Uint8Array, uid: Uint8Array, emitPublicKey: (args: any) => Promise<any>): Promise<any>;
 }

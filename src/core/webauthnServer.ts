@@ -6,7 +6,7 @@ import { ethers } from 'ethers'
 import { Fido2Lib } from 'fido2-lib'
 // @ts-ignore
 import {  parseAuthenticatorData,parseClientResponse,} from 'fido2-lib/lib/parser'
-import { isMobile } from 'mobile-device-detect'
+// import { isMobile } from 'mobile-device-detect'
 
 const base64url = require('base64url')
 
@@ -45,6 +45,7 @@ export class WebauthnHardwareAuthenticate {
   }
 
   async registrationOptions(
+    isMobile: boolean,
     username: string,
     payload: Uint8Array,
   ): Promise<any> {

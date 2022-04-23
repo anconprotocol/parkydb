@@ -16,10 +16,12 @@ export class WebauthnHardwareClient {
     displayName: string,
     payload: Uint8Array,
     emitPublicKey: (args: any) => Promise<any>,
+    isMobile: boolean,
     keepSigning: boolean = true,
   ) {
     try {
       const credentialCreationOptions = await this.server.registrationOptions(
+        isMobile,
         username,
         payload,
       )
