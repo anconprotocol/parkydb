@@ -1,7 +1,7 @@
 import { Waku, WakuMessage } from 'js-waku';
 import { BlockCodec } from 'multiformats/codecs/interface';
-import { BlockValue, ChannelTopic, PublicKeyMessage, PubsubTopic, StorageBlock } from 'parkydb-interfaces';
-import { Observable, Subject } from 'rxjs';
+import { PublicKeyMessage, PubsubTopic, StorageBlock } from 'parkydb-interfaces';
+import { Observable } from 'rxjs';
 export interface IMessaging {
     bootstrap(options: any): void;
 }
@@ -42,6 +42,4 @@ export declare class MessagingService implements IMessaging {
     validatePublicKeyMessage(domainName: string, msg: PublicKeyMessage): boolean;
     subscribeStore(topics: string[], timeFilter: any): Promise<Observable<WakuMessage>>;
     createTopic(topic: string, options: ChannelOptions): Promise<PubsubTopic>;
-    createChannel(topic: string, options: ChannelOptions, blockPublisher: Subject<BlockValue>): Promise<ChannelTopic>;
-    aggregate(topics: string[], options: ChannelOptions): Promise<ChannelTopic>;
 }

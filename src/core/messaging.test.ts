@@ -191,7 +191,7 @@ test('create channel topic', async (t) => {
     decode: (buffer: any) => decode(buffer),
   }
   const topic = `/anconprotocol/1/marketplace/cbor`
-  const pubsubAlice = await alice.createChannelPubsub(topic, {
+  const pubsubAlice = await alice.createTopicPubsub(topic, {
     from: accountA,
     middleware: {
       incoming: [tap()],
@@ -203,7 +203,7 @@ test('create channel topic', async (t) => {
     // match topic
     t.is(topic, JSON.parse(block.payloadAsUtf8).topic)
   })
-  const pubsubBob = await bob.createChannelPubsub(topic, {
+  const pubsubBob = await bob.createTopicPubsub(topic, {
     from: accountB,
     middleware: {
       incoming: [tap()],

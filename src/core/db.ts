@@ -63,9 +63,9 @@ export class ParkyDB {
     await this.db.initialize(options.withDB.options)
 
     await this.graphqlService.initialize(options.graphql.resolvers)
-    await this.keyringController.load(this.db.db)
 
     if (options.withWallet) {
+    await this.keyringController.load(this.db.db)
       if (options.withWallet.autoLogin) {
         try {
           const kr = await this.keyringController.keyringController.submitPassword(
@@ -260,54 +260,6 @@ export class ParkyDB {
     return this.ipfsService
   }
 
-  /**
-   * @deprecated Use createTopicPubsub.
-   * @param topic
-   * @param options
-   * @returns
-   */
-  async createChannelPubsub(topic: string, options: ChannelOptions) {
-    const w = await this.getWallet()
-    const acct = await w.getAccounts()
-    const from = acct[0]
-
-    const h = await w.exportAccount(from)
-
-    const sigkey = Buffer.from(h, 'hex')
-    const pubkey = getPublicKey(sigkey)
-    // @ts-ignore
-    return this.messagingService.createChannel(
-      topic,
-      { ...options, sigkey: h, encryptionPubKey: hexlify(pubkey) },
-      this.db.onBlockCreated,
-    )
-  }
-
-  /**
-   * @deprecated Will be removed
-   * @param topic
-   * @param options
-   * @returns
-   */
-  async aggregate(topic: string[], options: ChannelOptions) {
-    const w = await this.getWallet()
-    let from = options.from
-    if (from === '') {
-      const acct = await w.getAccounts()
-      from = acct[0]
-    }
-
-    const h = await w.exportAccount(from)
-
-    const sigkey = Buffer.from(h, 'hex')
-    const pubkey = getPublicKey(sigkey)
-    // @ts-ignore
-    return this.messagingService.aggregate(topic, {
-      ...options,
-      sigkey: h,
-      encryptionPubKey: hexlify(pubkey),
-    })
-  }
 
   /**
    *

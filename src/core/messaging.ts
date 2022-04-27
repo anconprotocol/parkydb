@@ -10,8 +10,13 @@ import { SignTypedDataVersion } from '@metamask/eth-sig-util'
 import { Waku, WakuMessage } from 'js-waku'
 import { BlockCodec } from 'multiformats/codecs/interface'
 import {
-  BlockValue, ChannelTopic, PacketPayload,
-  PublicKeyMessage, PubsubTopic, SecurePacketPayload, StorageBlock
+  BlockValue,
+  ChannelTopic,
+  PacketPayload,
+  PublicKeyMessage,
+  PubsubTopic,
+  SecurePacketPayload,
+  StorageBlock,
 } from 'parkydb-interfaces'
 import { map, mergeMap, Observable, of, Subject, tap } from 'rxjs'
 
@@ -160,10 +165,10 @@ export class MessagingService implements IMessaging {
     const p = this.waku.store.queryHistory(topics, {
       timeFilter,
     })
-    return of(p).pipe(mergeMap((x
-) => x), mergeMap
-
-(x => (x)))
+    return of(p).pipe(
+      mergeMap((x) => x),
+      mergeMap((x) => x),
+    )
   }
   /**
    * Creates a pubsub topic. Note topic format must be IPLD dag-json or dag-cbor
@@ -286,118 +291,6 @@ export class MessagingService implements IMessaging {
         if (cancel) {
           cancel.unsubscribe()
         }
-      },
-    }
-  }
-
-  /**
-   * Creates a data channel, is similar to a pubsub topic but used for data messaging exchanges
-   * @param topic
-   * @param options
-   * @param blockPublisher
-   * @returns
-   */
-  async createChannel(
-    topic: string,
-    options: ChannelOptions,
-    blockPublisher: Subject<BlockValue>,
-  ): Promise<ChannelTopic> {
-    // Topic subscriber observes for DAG blocks (IPLD as bytes)
-    const pubsub = new Subject<any>()
-    this.waku.relay.addObserver(
-      (msg: any) => {
-        if (options.middleware) {
-          pubsub.next(msg)
-        }
-      },
-      [topic],
-    )
-
-    // Topic publisher observes for block publisher and sends these blocks with Waku P2P
-    const cancel = blockPublisher
-      .pipe(
-        tap(),
-        tap(),
-        tap(),
-        tap(),
-        tap(),
-        tap(),
-        tap(),
-        tap(),
-        tap(),
-        tap(),
-        tap(),
-        ...options.middleware.outgoing,
-      )
-      .subscribe(async (block: any) => {
-        const view = await options.blockCodec.encode(block)
-        const msg = await WakuMessage.fromBytes(view, topic, {
-          //  encPublicKey: options.pubkey,
-          // sigPrivKey: options.sigkey,
-        })
-        await this.waku.relay.send(msg)
-      })
-
-    return {
-      onBlockReply$: pubsub
-        .asObservable()
-        .pipe(
-          tap(),
-          tap(),
-          tap(),
-          tap(),
-          tap(),
-          tap(),
-          tap(),
-          tap(),
-          tap(),
-          map(options.blockCodec.decode),
-          ...options.middleware.incoming,
-        ),
-      close: () => {
-        if (cancel) cancel.unsubscribe()
-      },
-    }
-  }
-
-  /**
-   * Aggregates multiple topics
-   * @param topics
-   * @param options
-   * @param blockPublisher
-   * @returns
-   */
-  async aggregate(
-    topics: string[],
-    options: ChannelOptions,
-  ): Promise<ChannelTopic> {
-    // Topic subscriber observes for DAG blocks (IPLD as bytes)
-    const pubsub = new Subject<any>()
-    this.waku.relay.addObserver((msg: any) => {
-      if (options.middleware) {
-        pubsub.next(msg)
-      }
-    }, topics)
-
-    return {
-      onBlockReply$: pubsub
-        .asObservable()
-        .pipe(
-          tap(),
-          tap(),
-          tap(),
-          tap(),
-          tap(),
-          tap(),
-          tap(),
-          tap(),
-          tap(),
-          tap(),
-          map(options.blockCodec.decode),
-          ...options.middleware.incoming,
-        ),
-      close: () => {
-        // no op
       },
     }
   }

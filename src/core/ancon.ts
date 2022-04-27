@@ -62,7 +62,7 @@ export class AnconService {
     // @ts-ignore
     const rawResponse = await fetch(
       // @ts-ignore
-      `${this.rpc}/v0/did`,
+      `${this.rpc}/v1/did`,
       requestOptions,
     )
     //   json response
@@ -98,7 +98,7 @@ export class AnconService {
     // @ts-ignore
     const rawResponse = await fetch(
       // @ts-ignore
-      `${this.rpc}/v0/dag`,
+      `${this.rpc}/v1/dag`,
       requestOptions,
     )
     //   json response

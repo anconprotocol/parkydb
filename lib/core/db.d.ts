@@ -62,8 +62,6 @@ export declare class ParkyDB {
     getWallet(): Promise<any>;
     get ancon(): AnconService;
     get ipfs(): IPFSService;
-    createChannelPubsub(topic: string, options: ChannelOptions): Promise<import("parkydb-interfaces").ChannelTopic>;
-    aggregate(topic: string[], options: ChannelOptions): Promise<import("parkydb-interfaces").ChannelTopic>;
     get(key: any, path?: any): Promise<any>;
     queryBlocks$(fn: (blocks: any) => () => unknown): Promise<any>;
     getBlocksByTableName$(tableName: string, fn: (table: any) => () => unknown): Promise<any>;
